@@ -1,0 +1,34 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+class CreateSteamaHybridPaymentPlans extends Migration
+{
+    /**
+     * Run the migrations.
+     *
+     * @return void
+     */
+    public function up()
+    {
+        Schema::create('steama_hybrid_payment_plans', function (Blueprint $table) {
+            $table->increments('id');
+            $table->decimal('connection_fee')->nullable();
+            $table->decimal('subscription_cost')->default(0);
+            $table->string('payment_days_of_month');
+            $table->timestamps();
+        });
+    }
+
+    /**
+     * Reverse the migrations.
+     *
+     * @return void
+     */
+    public function down()
+    {
+        Schema::dropIfExists('steama_hybrid_payment_plans');
+    }
+}

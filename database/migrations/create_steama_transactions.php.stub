@@ -1,0 +1,39 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+class CreateSteamaTransactions extends Migration
+{
+    /**
+     * Run the migrations.
+     *
+     * @return void
+     */
+    public function up()
+    {
+        Schema::create('steama_transactions', function (Blueprint $table) {
+            $table->increments('id');
+            $table->integer('site_id');
+            $table->integer('transaction_id')->unique();
+            $table->integer('customer_id');
+            $table->decimal('amount');
+            $table->string('category');
+            $table->string('provider');
+            $table->timestamp('timestamp');
+            $table->string('synchronization_status');
+            $table->timestamps();
+        });
+    }
+
+    /**
+     * Reverse the migrations.
+     *
+     * @return void
+     */
+    public function down()
+    {
+        Schema::dropIfExists('steama_transactions');
+    }
+}
