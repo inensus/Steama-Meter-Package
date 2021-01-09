@@ -32,8 +32,7 @@
                     <md-table-head>Site</md-table-head>
                     <md-table-head>#</md-table-head>
                 </md-table-row>
-                <md-table-row v-for="(item,index) in customerService.list" :key="index"
-                              @click="showMovements(item)">
+                <md-table-row v-for="(item,index) in customerService.list" :key="index">
                     <md-table-cell>{{ item.id }}</md-table-cell>
                     <md-table-cell>{{ item.steamaId }}</md-table-cell>
                     <md-table-cell>{{ item.firstName }}</md-table-cell>
@@ -75,7 +74,11 @@
                                 <md-icon>close</md-icon>
                             </md-button>
                         </div>
-                        <div v-else>
+                        <div v-else class="edit-button-area">
+                            <md-button class="md-icon-button" @click="showMovements(item)">
+                                <md-tooltip md-direction="top">Meter Movements</md-tooltip>
+                                <md-icon>swap_vert</md-icon>
+                            </md-button>
                             <md-button class="md-icon-button" @click="editCustomer = item.id">
                                 <md-icon>edit</md-icon>
                             </md-button>
@@ -239,5 +242,8 @@ export default {
 </script>
 
 <style scoped>
-
+    .edit-button-area {
+        display: inline-flex;
+        margin-left: -2rem;
+    }
 </style>
