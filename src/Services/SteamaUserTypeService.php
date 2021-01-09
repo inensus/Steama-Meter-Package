@@ -5,24 +5,29 @@ namespace Inensus\SteamaMeter\Services;
 
 
 use App\Models\ConnectionType;
+use App\Models\SubConnectionType;
 use Inensus\SteamaMeter\Models\SteamaUserType;
 
 class SteamaUserTypeService
 {
     private $connectionType;
     private $userType;
-
-    public function __construct(ConnectionType $connectionTypeModel, SteamaUserType $userTypeModel)
-    {
+    private $subConnectionType;
+    public function __construct(
+        ConnectionType $connectionTypeModel,
+        SteamaUserType $userTypeModel,
+        SubConnectionType $subConnectionType
+    ) {
         $this->connectionType = $connectionTypeModel;
         $this->userType = $userTypeModel;
+        $this->subConnectionType= $subConnectionType;
     }
 
     /**
      * This function uses one time on installation of the package.
      *
      */
-    public function createUserTypes()
+    public function createUserTypes($tariff)
     {
         $connectionTypes = [
             'NA' => 'Not Specified',
@@ -34,10 +39,17 @@ class SteamaUserTypeService
             $connectionType = $this->connectionType->newQuery()->create([
                 'name' => $value
             ]);
+
             $this->userType->newQuery()->create([
                 'mpm_connection_type_id' => $connectionType->id,
                 'name' => $value,
                 'syntax' => $key
+            ]);
+
+            $this->subConnectionType->newQuery()->create([
+                'name'=>$value,
+                'connection_type_id'=>$connectionType->id,
+                'tariff_id'=>$tariff->id
             ]);
 
         }

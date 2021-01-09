@@ -30,8 +30,10 @@ class SteamaTariffService
             'total_price' => 0,
             'currency' => config('steama.currency')
         ]);
-        return $this->tariff->newQuery()->create([
+         $this->tariff->newQuery()->create([
             'mpm_tariff_id' => $meterTariff->id
         ]);
+
+         return $meterTariff;
     }
 }

@@ -71,8 +71,8 @@ class InstallPackage extends Command
         $this->apiHelpers->registerSparkMeterManufacturer();
 
         $this->credentialService->createCredentials();
-        $this->tariffService->createTariff();
-        $this->userTypeService->createUserTypes();
+        $tariff = $this->tariffService->createTariff();
+        $this->userTypeService->createUserTypes($tariff);
         $this->paymentPlanService->createPaymentPlans();
         $this->agentService->createSteamaAgentCommission();
 
