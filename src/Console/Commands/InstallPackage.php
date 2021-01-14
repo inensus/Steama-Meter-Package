@@ -55,7 +55,7 @@ class InstallPackage extends Command
 
         $this->info('Copying migrations\n');
         $this->call('vendor:publish', [
-            '--provider' => "Inensus\SteamaMeter\Providers\ServiceProvider",
+            '--provider' => "Inensus\SteamaMeter\Providers\SteamaMeterServiceProvider",
             '--tag' => "migrations"
         ]);
 
@@ -64,7 +64,7 @@ class InstallPackage extends Command
 
         $this->info('Copying vue files\n');
         $this->call('vendor:publish', [
-            '--provider' => "Inensus\SteamaMeter\Providers\ServiceProvider",
+            '--provider' => "Inensus\SteamaMeter\Providers\SteamaMeterServiceProvider",
             '--tag' => "vue-components"
         ]);
 
