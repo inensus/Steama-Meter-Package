@@ -20,7 +20,7 @@
   "extra": {
     "laravel": {
       "providers": [
-        "Inensus\\SteamaMeter\\Providers\\ServiceProvider"
+        "Inensus\\SteamaMeter\\Providers\\SteamaMeterServiceProvider"
       ]
     }
   }
