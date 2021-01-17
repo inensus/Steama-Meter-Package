@@ -11,7 +11,7 @@ class Kernel extends ConsoleKernel
     {
         parent::schedule($schedule);
         $schedule->command('steama-meter:updatesGetter')->dailyAt('00:30');
-        $schedule->command('steama-meter:transactionSync')->withoutOverlapping(50)
+        $schedule->command('steama-meter:transactionSync')->everyFiveMinutes()->withoutOverlapping(50)
             ->appendOutputTo(storage_path('logs/cron.log'));
 
         //
