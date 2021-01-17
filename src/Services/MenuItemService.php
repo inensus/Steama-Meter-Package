@@ -8,7 +8,7 @@ class MenuItemService
     public function createMenuItems()
     {
         $menuItem = [
-            'name' =>'Steama Meters',
+            'name' =>'Steama Meter',
             'url_slug' =>'',
             'md_icon' =>'bolt'
         ];

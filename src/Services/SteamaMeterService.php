@@ -226,7 +226,15 @@ class SteamaMeterService implements ISynchronizeService
             $meter->meterType()->associate($this->getMeterType($stmMeter));
             $meter->save();
             if ($stmCustomer) {
-                $points = $stmMeter['latitude'] === null ? config('steama.geoLocation') : $stmMeter['latitude'] . ',' . $stmMeter['longitude'];
+                if ($stmMeter['latitude'] !== null && $stmMeter['longitude'] !== null){
+                    $points =  $stmMeter['latitude'] . ',' . $stmMeter['longitude'];
+                }else{
+                    $points= explode(',', config('steama.geoLocation'));
+                    $latitude= strval(doubleval($points[0])-(mt_rand(10,1000)/ 10000)) ;
+                    $longitude=strval(doubleval($points[1])-(mt_rand(10,1000)/ 10000)) ;
+                    $points=$latitude.','.$longitude;
+                }
+
                 $geoLocation->points = $points;
 
                 $connectionType = $stmCustomer->userType->mpmConnectionType;
@@ -281,6 +289,7 @@ class SteamaMeterService implements ISynchronizeService
                 $meterParameter->save();
             }
     }
+
     public function getMeterType($stmMeter)
     {
         $version = $stmMeter['version'];
@@ -338,14 +347,15 @@ class SteamaMeterService implements ISynchronizeService
 
     public function updateSteamaMeterInfo($stmMeter, $putParams)
     {
-        $url = '/bitharvesters/' . $stmMeter->bit_harvester_id . '/' . $this->rootUrl . '/' . $stmMeter->meter_id . '/';
-        $meter = $this->steamaApi->patch($url . '/', $putParams);
+        $url = '/bitharvesters/' . $stmMeter->bit_harvester_id . $this->rootUrl . '/' . $stmMeter->meter_id . '/';
+        $meter = $this->steamaApi->patch($url, $putParams);
         $stmMeterHash= $this->steamaMeterHasher($meter);
         $stmMeter->update([
             'hash' => $stmMeterHash
         ]);
         return $stmMeter->fresh();
     }
+
     private function steamaMeterHasher($steamaMeter)
     {
         return $this->apiHelpers->makeHash([
