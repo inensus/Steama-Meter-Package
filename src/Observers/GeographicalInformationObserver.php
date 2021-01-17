@@ -35,14 +35,14 @@ class GeographicalInformationObserver
 
     public function updated(GeographicalInformation $geographicalInformation)
     {
-        if ($geographicalInformation->owner_type === 'meter_parameter') {
+         if ($geographicalInformation->owner_type === 'meter_parameter') {
             $meterParameter = $this->meterParameter->newQuery()->find($geographicalInformation->owner_id);
             $stmMeter = $this->stmMeter->newQuery()->where('mpm_meter_id', $meterParameter->meter_id)->first();
             if ($stmMeter) {
                 $points = explode(',', $geographicalInformation->points);
                 $putParams = [
-                    'latitude' => intval($points[0]),
-                    'longitude' => intval($points[1]),
+                    'latitude' => floatval($points[0]),
+                    'longitude' => floatval($points[1]),
                 ];
                 $this->stmMeterService->updateSteamaMeterInfo($stmMeter, $putParams);
 
