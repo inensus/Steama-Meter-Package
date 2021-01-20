@@ -23,10 +23,6 @@ export class PaginateService {
         this.paginator.postData = data
     }
 
-    getPaginationUrl (page) {
-        return this.paginator.url + '?page=' + page
-    }
-
     nextPage () {
         if (this.paginator.currentPage < this.paginator.totalPage)
             this.paginator.currentPage++
@@ -51,13 +47,10 @@ export class PaginateService {
         param['page'] = page
         param['per_page'] = this.paginator.perPage
         try {
-            let response
-            if (this.paginator.method === 'GET') {
-                response = await this.repository.get(this.paginator.url, param)
-            } else if (this.paginator.method === 'POST') {
-                this.paginator.postData['per_page'] = this.paginator.perPage
-                response = await this.repository.post(this.paginator.url + '?page=' + page, param)
-            }
+
+
+            let response = await this.repository.get(this.paginator.url, param)
+
             if (response.status === 200) {
                 let data = response.data
                 return this.fromJson(data)

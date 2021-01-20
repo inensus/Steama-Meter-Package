@@ -5,28 +5,28 @@ let routes = [
         meta: { layout: 'default' },
     },
     {
-        path: '/steama-meters/steama-site/page/:page_number',
+        path: '/steama-meters/steama-site',
         component: require('./plugins/steama-meter/js/components/Site/SiteList').default,
         meta: { layout: 'default' },
     },
     {
-        path: '/steama-meters/steama-customer/page/:page_number',
+        path: '/steama-meters/steama-customer',
         component: require('./plugins/steama-meter/js/components/Customer/CustomerList').default,
         meta: { layout: 'default' },
     },
     {
-        path: '/steama-meters/steama-transaction/:customer_id/page/:page_number',
+        path: '/steama-meters/steama-transaction/:customer_id',
         component: require('./plugins/steama-meter/js/components/Customer/CustomerMovements').default,
         meta: { layout: 'default' },
     },
     {
-        path: '/steama-meters/steama-meter/page/:page_number',
+        path: '/steama-meters/steama-meter',
         component: require('./plugins/steama-meter/js/components/Meter/MeterList').default,
         meta: { layout: 'default' },
     },
 
     {
-        path: '/steama-meters/steama-agent/page/:page_number',
+        path: '/steama-meters/steama-agent',
         component: require('./plugins/steama-meter/js/components/Agent/AgentList').default,
         meta: { layout: 'default' },
     },
