@@ -149,7 +149,7 @@ export default {
             this.$router.push({
                 query: Object.assign({}, this.$route.query, {
                     page: pageNumber,
-                    per_page: this.paginator.perPage
+                    per_page: this.paginateService.paginator.perPage
                 })
             }).catch(error => {
                 if (error.name !== 'NavigationDuplicated') {
