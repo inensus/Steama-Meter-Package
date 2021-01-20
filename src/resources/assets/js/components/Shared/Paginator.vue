@@ -95,73 +95,73 @@
 <script>
 
 
-  import { PaginateService } from '../../services/PaginateService'
-  import { EventBus } from '../../eventbus'
+import { PaginateService } from '../../services/PaginateService'
+import { EventBus } from '../../eventbus'
 
-  export default {
+export default {
     name: 'Paginator',
     props: {
-      url: {
-        default: null
-      },
-      subscriber: {
-        type: String,
-        default: ''
-      },
-      route_name: {
-        type: String,
-        default: ''
-      },
-      show_per_page: {
-        type: Boolean,
-        default: false
-      }
+        url: {
+            default: null
+        },
+        subscriber: {
+            type: String,
+            default: ''
+        },
+        route_name: {
+            type: String,
+            default: ''
+        },
+        show_per_page: {
+            type: Boolean,
+            default: false
+        }
     },
     data () {
-      return {
-        paginateService: new PaginateService(this.url),
-        loading: false,
-        term: {},
-        threeDots: false,
-      }
+        return {
+            paginateService: new PaginateService(this.url),
+            loading: false,
+            term: {},
+            threeDots: false,
+        }
     },
     mounted () {
-      let pageNumber = this.$route.query.page
-      this.loadPage(pageNumber)
-      EventBus.$on('loadPage', this.eventLoadPage)
+        let pageNumber = this.$route.query.page
+        this.loadPage(pageNumber)
+        EventBus.$on('loadPage', this.eventLoadPage)
 
     },
     methods: {
-      eventLoadPage (paginatorUrl, term = {}) {
-        this.term = term
-        this.paginateService = new PaginateService(paginatorUrl)
-        this.loadPage(1)
-      },
-      defaultItemsPerPage (data) {
-        this.paginateService.paginator.perPage = data.target.value
-        this.loadPage(this.paginateService.paginator.currentPage)
-      },
-      async loadPage (pageNumber = 1) {
-        if (this.loading)
-          return
-        this.loading = true
-        await this.paginateService.loadPage(pageNumber, this.term)
-        this.$router.push({
-          query: Object.assign({}, this.$route.query, {
-            page: pageNumber,
-            per_page: this.paginator.perPage
-          })
-        }).catch(error => {
-          if (error.name !== 'NavigationDuplicated') {
-            throw error
-          }
-        })
-        this.loading = false
-        EventBus.$emit('pageLoaded', this.subscriber, this.paginateService.paginator.data)
-      }
+        eventLoadPage (paginatorUrl, term = {}) {
+            this.term = term
+            this.paginateService = new PaginateService(paginatorUrl)
+            this.loadPage(1)
+        },
+        defaultItemsPerPage (data) {
+            this.paginateService.paginator.perPage = data.target.value
+            this.loadPage(this.paginateService.paginator.currentPage)
+        },
+        async loadPage (pageNumber = 1) {
+            if (this.loading)
+                return
+            this.loading = true
+            await this.paginateService.loadPage(pageNumber, this.term)
+            this.$router.push({
+                query: Object.assign({}, this.$route.query, {
+                    page: pageNumber,
+                    per_page: this.paginator.perPage
+                })
+            }).catch(error => {
+                if (error.name !== 'NavigationDuplicated') {
+                    throw error
+                }
+            })
+            this.loading = false
+            EventBus.$emit('pageLoaded', this.subscriber, this.paginateService.paginator.data)
+        }
     },
 
-  }
+}
 </script>
 
 
