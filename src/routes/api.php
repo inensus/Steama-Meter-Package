@@ -19,7 +19,7 @@ Route::group(['prefix' => 'steama-meters'], function () {
         Route::get('/count', 'SteamaCustomerController@count');
         Route::put('/{customer}', 'SteamaCustomerController@update');
         Route::get('/{customerId}', 'SteamaCustomerController@get');
-        Route::get('/search', 'SteamaCustomerController@search');
+        Route::get('/advanced/search', 'SteamaCustomerController@search');
     });
     Route::group(['prefix' => 'steama-meter'], function () {
         Route::get('/', 'SteamaMeterController@index');

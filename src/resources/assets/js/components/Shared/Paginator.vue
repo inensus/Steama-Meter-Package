@@ -41,7 +41,7 @@
             <div class="col-sm-6 col-xs-12">
                 <div class="dataTables_paginate paging_simple_numbers" id="datatable_col_reorder_paginate">
                     <ul class="pagination pagination-sm">
-                        <li :class="paginateService.paginator.currentPage>1 ? 'paginate_button previous' :' paginate_button previous disabled'"
+                        <li :class="paginateService.paginator.currentPage>1 ? 'paginate_button previous' :' paginate_button previous-disabled'"
                             id="datatable_col_reorder_previous">
                             <a
                                     v-if="!loading"
@@ -72,7 +72,7 @@
                             </li>
                         </template>
 
-                        <li :class="(paginateService.paginator.currentPage < paginateService.paginator.totalPage ? 'paginate_button next':'paginate_button next disabled')"
+                        <li :class="(paginateService.paginator.currentPage < paginateService.paginator.totalPage ? 'paginate_button next':'paginate_button next-disabled')"
                             id="datatable_col_reorder_next">
                             <a
                                     v-if="!loading"
@@ -146,16 +146,18 @@ export default {
                 return
             this.loading = true
             await this.paginateService.loadPage(pageNumber, this.term)
-            this.$router.push({
-                query: Object.assign({}, this.$route.query, {
-                    page: pageNumber,
-                    per_page: this.paginateService.paginator.perPage
+            if (pageNumber) {
+                this.$router.push({
+                    query: Object.assign({}, this.$route.query, {
+                        page: pageNumber,
+                        per_page: this.paginateService.paginator.perPage
+                    })
+                }).catch(error => {
+                    if (error.name !== 'NavigationDuplicated') {
+                        throw error
+                    }
                 })
-            }).catch(error => {
-                if (error.name !== 'NavigationDuplicated') {
-                    throw error
-                }
-            })
+            }
             this.loading = false
             EventBus.$emit('pageLoaded', this.subscriber, this.paginateService.paginator.data)
         }
@@ -338,5 +340,12 @@ export default {
         box-shadow: inset 0 -2px 0 rgba(0, 0, 0, 0.05);
         -moz-box-shadow: inset 0 -2px 0 rgba(0, 0, 0, 0.05);
         -webkit-box-shadow: inset 0 -2px 0 rgba(0, 0, 0, 0.05);
+    }
+    .previous-disabled {
+        pointer-events: none;
+    }
+
+    .next-disabled {
+        pointer-events: none;
     }
 </style>

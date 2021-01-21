@@ -127,7 +127,7 @@ export class CustomerService {
     }
 
     search (term) {
-        this.pagingUrl = '/api/steama-meters/steama-customer/search'
+        this.pagingUrl = '/api/steama-meters/steama-customer/advanced/search'
         EventBus.$emit('loadPage', this.pagingUrl, { 'term': term })
     }
 

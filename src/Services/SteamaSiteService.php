@@ -64,8 +64,9 @@ class SteamaSiteService implements ISynchronizeService
                     $stmSiteHash = $this->steamaSiteHasher($site);
 
                     if ($registeredStmSite) {
-                        $isHashChanged = $registeredStmSite->hash === $stmSiteHash ?? false;
+                        $isHashChanged = $registeredStmSite->hash === $stmSiteHash ? false : true;
                         $relatedMiniGrid = $this->miniGrid->newQuery()->find($registeredStmSite->mpm_mini_grid_id);
+
                         if (!$relatedMiniGrid) {
                             $miniGrid = $this->creteRelatedMiniGrid($site);
                             $registeredStmSite->update([
@@ -171,9 +172,10 @@ class SteamaSiteService implements ISynchronizeService
 
     public function updateRelatedMiniGrid($site,$miniGrid)
     {
-       return $miniGrid->newQuery()->update([
+        $miniGrid->newQuery()->update([
             'name' => $site['name'],
         ]);
+        return $miniGrid->fresh();
      }
     public function updateGeographicalInformation($miniGridId,$site)
     {

@@ -215,7 +215,7 @@ export default {
             }
         },
         showMovements (customer) {
-            this.$router.push({ path: '/steama-meters/steama-transaction/' + customer.steamaId + '/page/1' })
+            this.$router.push({ path: '/steama-meters/steama-transaction/' + customer.steamaId })
         },
         searching (searchTerm) {
             this.customerService.search(searchTerm)
