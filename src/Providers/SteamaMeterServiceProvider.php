@@ -2,9 +2,10 @@
 
 namespace Inensus\SteamaMeter\Providers;
 
-use Illuminate\Contracts\Filesystem\Filesystem;
+
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\Collection;
+use Illuminate\Filesystem\Filesystem;
 use Illuminate\Support\ServiceProvider;
 use Inensus\SteamaMeter\Console\Commands\InstallPackage;
 use Inensus\SteamaMeter\Console\Commands\SteamaMeterTransactionSync;
