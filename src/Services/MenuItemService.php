@@ -56,7 +56,7 @@ class MenuItemService
             array_push($subMenuItems, $subMenuItem5);
             return ['menuItem' => $menuItem, 'subMenuItems' => $subMenuItems];
         }else{
-            return ['menuItem'=>null];
+            return [];
         }
 
 

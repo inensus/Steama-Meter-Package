@@ -86,7 +86,7 @@ class InstallPackage extends Command
         $this->call('routes:generate');
 
         $menuItems = $this->menuItemService->createMenuItems();
-        if(!$menuItems['menuItem']){
+        if(array_key_exists('menuItem',$menuItems)){
             $this->call('menu-items:generate', [
                 'menuItem' => $menuItems['menuItem'],
                 'subMenuItems' => $menuItems['subMenuItems'],
