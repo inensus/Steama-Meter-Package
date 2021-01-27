@@ -64,7 +64,8 @@ class InstallPackage extends Command
         $this->info('Copying vue files\n');
         $this->call('vendor:publish', [
             '--provider' => "Inensus\SteamaMeter\Providers\SteamaMeterServiceProvider",
-            '--tag' => "vue-components --force",
+            '--tag' => "vue-components",
+            '--force' => true,
         ]);
 
         $this->apiHelpers->registerSparkMeterManufacturer();

@@ -131,7 +131,6 @@ export default {
             if (subscriber !== this.subscriber) return
             this.agentService.updateList(data)
             EventBus.$emit('widgetContentLoaded', this.subscriber, this.agentService.list.length)
-            //
         },
         alertNotify (type, message) {
             this.$notify({
