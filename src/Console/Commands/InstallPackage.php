@@ -22,7 +22,6 @@ class InstallPackage extends Command
     private $credentialService;
     private $paymentPlanService;
     private $tariffService;
-    private $transactionCategoryService;
     private $userTypeService;
     private $apiHelpers;
     private $siteService;
@@ -65,7 +64,7 @@ class InstallPackage extends Command
         $this->info('Copying vue files\n');
         $this->call('vendor:publish', [
             '--provider' => "Inensus\SteamaMeter\Providers\SteamaMeterServiceProvider",
-            '--tag' => "vue-components"
+            '--tag' => "vue-components --force",
         ]);
 
         $this->apiHelpers->registerSparkMeterManufacturer();
@@ -86,11 +85,12 @@ class InstallPackage extends Command
         $this->call('routes:generate');
 
         $menuItems = $this->menuItemService->createMenuItems();
-        $this->call('menu-items:generate', [
-            'menuItem' => $menuItems['menuItem'],
-            'subMenuItems' => $menuItems['subMenuItems'],
-        ]);
-
+        if(!$menuItems['menuItem']){
+            $this->call('menu-items:generate', [
+                'menuItem' => $menuItems['menuItem'],
+                'subMenuItems' => $menuItems['subMenuItems'],
+            ]);
+        }
 
          $this->call('sidebar:generate');
 

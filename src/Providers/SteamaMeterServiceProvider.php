@@ -1,7 +1,10 @@
 <?php
+
 namespace Inensus\SteamaMeter\Providers;
 
+use Illuminate\Contracts\Filesystem\Filesystem;
 use Illuminate\Database\Eloquent\Relations\Relation;
+use Illuminate\Support\Collection;
 use Illuminate\Support\ServiceProvider;
 use Inensus\SteamaMeter\Console\Commands\InstallPackage;
 use Inensus\SteamaMeter\Console\Commands\SteamaMeterTransactionSync;
@@ -20,14 +23,18 @@ use GuzzleHttp\Client;
 
 class SteamaMeterServiceProvider extends ServiceProvider
 {
-    public function boot()
+    public function boot(Filesystem $filesystem)
     {
         $this->app->register(RouteServiceProvider::class);
         if ($this->app->runningInConsole()) {
             $this->publishConfigFiles();
             $this->publishVueFiles();
-            $this->publishMigrations();
-            $this->commands([InstallPackage::class,SteamaMeterTransactionSync::class,SteamaMeterUpdatesGetter::class]);
+            $this->publishMigrations($filesystem);
+            $this->commands([
+                InstallPackage::class,
+                SteamaMeterTransactionSync::class,
+                SteamaMeterUpdatesGetter::class
+            ]);
         }
         Relation::morphMap(
             [
@@ -38,7 +45,7 @@ class SteamaMeterServiceProvider extends ServiceProvider
                 'asset_rates' => SteamaAssetRatesPaymentPlan::class,
                 'tariff_override' => SteamaTariffOverridePaymentPlan::class,
                 'customer_time_of_usage' => SteamaCustomerBasisTimeOfUsage::class,
-                'steama_transaction'=>SteamaTransaction::class
+                'steama_transaction' => SteamaTransaction::class
             ]);
     }
 
@@ -74,33 +81,22 @@ class SteamaMeterServiceProvider extends ServiceProvider
         ], 'vue-components');
     }
 
-    public function publishMigrations()
+    public function publishMigrations($filesystem)
     {
-        if (!class_exists('CreateSteamaCredentials')) {
-            $timestamp = date('Y_m_d_His');
-           $this->publishes([
-               __DIR__ . '/../../database/migrations/create_steama_agents.php.stub' => $this->app->databasePath() . "/migrations/{$timestamp}_create_steama_agents.php",
-               __DIR__ . '/../../database/migrations/create_steama_asset_rates_payment_plans.php.stub' => $this->app->databasePath() . "/migrations/{$timestamp}_create_steama_asset_rates_payment_plans.php",
-               __DIR__ . '/../../database/migrations/create_steama_credentials.php.stub' => $this->app->databasePath() . "/migrations/{$timestamp}_create_steama_credentials.php",
-               __DIR__ . '/../../database/migrations/create_steama_customer_basis_payment_plans.php.stub' => $this->app->databasePath() . "/migrations/{$timestamp}_create_steama_customer_basis_payment_plans.php",
-               __DIR__ . '/../../database/migrations/create_steama_customers.php.stub' => $this->app->databasePath() . "/migrations/{$timestamp}_create_steama_customers.php",
-               __DIR__ . '/../../database/migrations/create_steama_flat_rate_payment_plans.php.stub' => $this->app->databasePath() . "/migrations/{$timestamp}_create_steama_flat_rate_payment_plans.php",
-               __DIR__ . '/../../database/migrations/create_steama_hybrid_payment_plans.php.stub' => $this->app->databasePath() . "/migrations/{$timestamp}_create_steama_hybrid_payment_plans.php",
-               __DIR__ . '/../../database/migrations/create_steama_meters.php.stub' => $this->app->databasePath() . "/migrations/{$timestamp}_create_steama_meters.php",
-               __DIR__ . '/../../database/migrations/create_steama_meter_types.php.stub' => $this->app->databasePath() . "/migrations/{$timestamp}_create_steama_meter_types.php",
-               __DIR__ . '/../../database/migrations/create_steama_minimum_top_up_requirements_payment_plans.php.stub' => $this->app->databasePath() . "/migrations/{$timestamp}_create_steama_minimum_top_up_requirements_payment_plans.php",
-               __DIR__ . '/../../database/migrations/create_steama_site_level_payment_plan_types.php.stub' => $this->app->databasePath() . "/migrations/{$timestamp}_create_steama_site_level_payment_plan_types.php",
-               __DIR__ . '/../../database/migrations/create_steama_site_level_payment_plans.php.stub' => $this->app->databasePath() . "/migrations/{$timestamp}_create_steama_site_level_payment_plans.php",
-               __DIR__ . '/../../database/migrations/create_steama_sites.php.stub' => $this->app->databasePath() . "/migrations/{$timestamp}_create_steama_sites.php",
-               __DIR__ . '/../../database/migrations/create_steama_subscription_payment_plans.php.stub' => $this->app->databasePath() . "/migrations/{$timestamp}_create_steama_subscription_payment_plans.php",
-               __DIR__ . '/../../database/migrations/create_steama_tariff_override_payment_plans.php.stub' => $this->app->databasePath() . "/migrations/{$timestamp}_create_steama_tariff_override_payment_plans.php",
-               __DIR__ . '/../../database/migrations/create_steama_per_kwh_payment_plans.php.stub' => $this->app->databasePath() . "/migrations/{$timestamp}_create_steama_per_kwh_payment_plans.php",
-               __DIR__ . '/../../database/migrations/create_steama_tariffs.php.stub' => $this->app->databasePath() . "/migrations/{$timestamp}_create_steama_tariffs.php",
-               __DIR__ . '/../../database/migrations/create_steama_transactions.php.stub' => $this->app->databasePath() . "/migrations/{$timestamp}_create_steama_transactions.php",
-               __DIR__ . '/../../database/migrations/create_steama_user_types.php.stub' => $this->app->databasePath() . "/migrations/{$timestamp}_create_steama_user_types.php",
-               __DIR__ . '/../../database/migrations/create_steama_customer_basis_time_of_usages.php.stub' => $this->app->databasePath() . "/migrations/{$timestamp}_create_steama_customer_basis_time_of_usages",
-
+        $this->publishes([
+           __DIR__.'/../database/migrations/create_steama_tables.php.stub' => $this->getMigrationFileName($filesystem),
             ], 'migrations');
-        }
     }
+
+    protected function getMigrationFileName(Filesystem $filesystem): string
+    {
+        $timestamp = date('Y_m_d_His');
+        return Collection::make($this->app->databasePath() . DIRECTORY_SEPARATOR . 'migrations' . DIRECTORY_SEPARATOR)
+            ->flatMap(function ($path) use ($filesystem) {
+                return $filesystem->glob($path . '*_create_steama_tables.php');
+            })->push($this->app->databasePath() . "/migrations/{$timestamp}_create_steama_tables.php")
+            ->first();
+    }
+
+
 }
