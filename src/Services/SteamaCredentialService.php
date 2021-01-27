@@ -28,7 +28,11 @@ class SteamaCredentialService
      */
     public function createCredentials()
     {
-        return $this->credential->newQuery()->create();
+        $credentials = $this->credential->newQuery()->first();
+        if (!$credentials){
+            return $this->credential->newQuery()->create();
+        }
+        return $credentials;
     }
 
     public function getCredentials()

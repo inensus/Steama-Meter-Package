@@ -24,15 +24,19 @@ class SteamaTariffService
      */
     public function createTariff()
     {
-        $meterTariff = $this->meterTariff->newQuery()->create([
-            'name' => 'Steama External Tariff',
-            'price' => 0,
-            'total_price' => 0,
-            'currency' => config('steama.currency')
-        ]);
-         $this->tariff->newQuery()->create([
-            'mpm_tariff_id' => $meterTariff->id
-        ]);
+        $meterTariff= $this->meterTariff->newQuery()->where('name','Steama External Tariff')->first();
+        if (!$meterTariff){
+            $meterTariff = $this->meterTariff->newQuery()->create([
+                'name' => 'Steama External Tariff',
+                'price' => 0,
+                'total_price' => 0,
+                'currency' => config('steama.currency')
+            ]);
+            $this->tariff->newQuery()->create([
+                'mpm_tariff_id' => $meterTariff->id
+            ]);
+        }
+
 
          return $meterTariff;
     }

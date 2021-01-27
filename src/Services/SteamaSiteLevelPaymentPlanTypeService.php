@@ -23,9 +23,13 @@ class SteamaSiteLevelPaymentPlanTypeService
     {
         $paymentPlans=['Credit Bundles','Time-of-use Pricing','Adaptive Per-kWh Tiers','Hybrid Tariff & Monthly Usage Tiers'];
         foreach ($paymentPlans as $value) {
-            $this->paymentPlanType->newQuery()->create([
-                'name'=>$value
-            ]);
+            $paymentPlanType= $this->paymentPlanType->newQuery()->where('name',$value)->first();
+            if (!$paymentPlanType){
+                $this->paymentPlanType->newQuery()->create([
+                    'name'=>$value
+                ]);
+            }
+
         }
     }
 }

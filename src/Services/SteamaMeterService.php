@@ -82,7 +82,7 @@ class SteamaMeterService implements ISynchronizeService
 
     public function getMetersCount()
     {
-        return count($this->meter->newQuery()->get());
+        return count($this->stmMeter->newQuery()->get());
     }
 
     public function sync()

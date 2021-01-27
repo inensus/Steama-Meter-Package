@@ -67,12 +67,16 @@ class SteamaAgentService implements ISynchronizeService
      */
     public function createSteamaAgentCommission()
     {
-        return $this->agentCommission->newQuery()->create([
-            'name' => 'Steama Agent Comission',
-            'energy_commission' => 0,
-            'appliance_commission' => 0,
-            'risk_balance' => -99999999999
-        ]);
+        $agentCommission = $this->agentCommission->newQuery()->where('name', 'Steama Agent Comission')->first();
+        if (!$agentCommission) {
+            $agentCommission = $this->agentCommission->newQuery()->create([
+                'name' => 'Steama Agent Comission',
+                'energy_commission' => 0,
+                'appliance_commission' => 0,
+                'risk_balance' => -99999999999
+            ]);
+        }
+        return $agentCommission;
     }
 
     public function sync()
@@ -88,8 +92,9 @@ class SteamaAgentService implements ISynchronizeService
 
                     if ($registeredStmAgent) {
                         $isHashChanged = $registeredStmAgent->hash === $stmAgentHash ? false : true;
-                        $relatedAgent = $this->agent->newQuery()->where('id',$registeredStmAgent->mpm_agent_id)->first();
-                        if (!$relatedAgent){
+                        $relatedAgent = $this->agent->newQuery()->where('id',
+                            $registeredStmAgent->mpm_agent_id)->first();
+                        if (!$relatedAgent) {
                             $newAgent = $this->createRelatedAgent($agent);
                             $registeredStmAgent->update([
                                 'agent_id' => $agent['id'],
@@ -99,18 +104,20 @@ class SteamaAgentService implements ISynchronizeService
                                 'credit_balance' => $agent['credit_balance'],
                                 'hash' => $stmAgentHash
                             ]);
-                        }else if($relatedAgent && $isHashChanged){
-                         $this->updateRelatedAgent($agent,$relatedAgent);
-                            $registeredStmAgent->update([
-                                'agent_id' => $agent['id'],
-                                'mpm_agent_id' => $relatedAgent->id,
-                                'site_id' => $agent['site'],
-                                'is_credit_limited' => $agent['is_credit_limited'],
-                                'credit_balance' => $agent['credit_balance'],
-                                'hash' => $stmAgentHash
-                            ]);
-                        }else{
-                            continue;
+                        } else {
+                            if ($relatedAgent && $isHashChanged) {
+                                $this->updateRelatedAgent($agent, $relatedAgent);
+                                $registeredStmAgent->update([
+                                    'agent_id' => $agent['id'],
+                                    'mpm_agent_id' => $relatedAgent->id,
+                                    'site_id' => $agent['site'],
+                                    'is_credit_limited' => $agent['is_credit_limited'],
+                                    'credit_balance' => $agent['credit_balance'],
+                                    'hash' => $stmAgentHash
+                                ]);
+                            } else {
+                                continue;
+                            }
                         }
                     } else {
                         $newAgent = $this->createRelatedAgent($agent);
@@ -126,7 +133,8 @@ class SteamaAgentService implements ISynchronizeService
                 }
             }
             return $this->stmAgent->newQuery()->with([
-                'mpmAgent.person.addresses', 'site.mpmMiniGrid'
+                'mpmAgent.person.addresses',
+                'site.mpmMiniGrid'
             ])->paginate(config('steama.paginate'));
         } catch (Exception $e) {
             Log::critical('Steama agents sync failed.', ['Error :' => $e->getMessage()]);
@@ -141,9 +149,9 @@ class SteamaAgentService implements ISynchronizeService
             $result = $this->steamaApi->get($url);
             $agents = $result['results'];
             while ($result['next']) {
-                $url =$this->rootUrl . '?' . explode('?', $result['next'])[1];
+                $url = $this->rootUrl . '?' . explode('?', $result['next'])[1];
                 $result = $this->steamaApi->get($url);
-                foreach ($result['results'] as $agent){
+                foreach ($result['results'] as $agent) {
                     array_push($agents, $agent);
                 }
             }
@@ -222,16 +230,17 @@ class SteamaAgentService implements ISynchronizeService
         return $agent;
     }
 
-    public function updateRelatedAgent($stmAgent,$agent)
+    public function updateRelatedAgent($stmAgent, $agent)
     {
-        $relatedPerson =$agent->person();
+        $relatedPerson = $agent->person();
         $relatedPerson->update([
             'name' => $stmAgent['first_name'],
             'surname' => $stmAgent['last_name'],
         ]);
         $site = $this->site->newQuery()->with('mpmMiniGrid.cities')->where('name', $stmAgent['site_name'])->first();
         $city = $site->mpmMiniGrid->cities->first();
-        $address= $this->address->newQuery()->where('owner_type','person')->where('owner_id',$relatedPerson->id)->where('is_primary',1)->first();
+        $address = $this->address->newQuery()->where('owner_type', 'person')->where('owner_id',
+            $relatedPerson->id)->where('is_primary', 1)->first();
         $address->update([
             'city_id' => $city->id,
             'phone' => $stmAgent['telephone'],
