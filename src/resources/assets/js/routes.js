@@ -30,5 +30,10 @@ let routes = [
         component: require('./plugins/steama-meter/js/components/Agent/AgentList').default,
         meta: { layout: 'default' },
     },
+    {
+        path: '/steama-meters/steama-setting',
+        component: require('./plugins/steama-meter/js/components/Setting/Setting').default,
+        meta: { layout: 'default' },
+    },
 
-]
+    ]

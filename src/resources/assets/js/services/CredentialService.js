@@ -16,7 +16,8 @@ export class CredentialService {
             id: credentialData.id,
             username: credentialData.username,
             password: credentialData.password,
-            isAuthenticated: credentialData.is_authenticated > 0
+            isAuthenticated: credentialData.is_authenticated > 0,
+            alert:credentialData.alert
         }
         return this.credential
     }
