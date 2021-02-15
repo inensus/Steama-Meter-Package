@@ -7,6 +7,11 @@ After it got authenticated, the plugin synchronizes Site, Customer, Meter and Ag
 
 When all records been updated, the plugin will start to synchronize the elder transactions( or the transaction that are not processed over Micropowermanager) automatically.
  
+## Sms Sending
+
+This plugin use Micropowermanager's  Sms-Gateway application for notifying customers.
+When their account balances reduce under their low balance warning limit and when customers make new payments, notifies through sms.
+Sms bodies are determined on SmsBodyGenerator class in Helpers folder. They can be changed from this class. 
 
 ## Installation
 Install the package via `composer require inensus/steama-meter`

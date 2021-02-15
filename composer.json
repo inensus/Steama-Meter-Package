@@ -1,14 +1,14 @@
 {
   "name": "inensus/steama-meter",
-  "description": "Package description",
+  "description": "Steamaco Meter Package Micropowermanager.",
   "type": "package",
   "require": {},
   "license": "MIT",
   "authors": [
     {
-      "name": "author",
-      "email": "email",
-      "role": "role"
+      "name": "Kamuran Engin",
+      "email": "ke@inensus.com",
+      "role": "Developer"
     }
   ],
   "minimum-stability": "dev",
