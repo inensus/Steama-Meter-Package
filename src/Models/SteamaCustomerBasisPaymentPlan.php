@@ -5,14 +5,13 @@ namespace Inensus\SteamaMeter\Models;
 use App\Relations\BelongsToMorph;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-
 class SteamaCustomerBasisPaymentPlan extends BaseModel
 {
     protected $table = 'steama_customer_basis_payment_plans';
 
     public function customer()
     {
-        return $this->belongsTo(SteamaCustomer::class,'customer_id');
+        return $this->belongsTo(SteamaCustomer::class, 'customer_id');
     }
 
     public function paymentPlan()

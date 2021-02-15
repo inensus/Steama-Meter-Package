@@ -1,6 +1,5 @@
 <?php
 
-
 namespace Inensus\SteamaMeter\Models;
 
 use Illuminate\Database\Eloquent\Model;

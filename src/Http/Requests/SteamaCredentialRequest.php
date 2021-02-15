@@ -1,6 +1,5 @@
 <?php
 
-
 namespace Inensus\SteamaMeter\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
@@ -17,7 +16,7 @@ class SteamaCredentialRequest extends FormRequest
     public function rules()
     {
         return [
-            'username' =>['required',Rule::unique('steama_credentials')->ignore($this->id)],
+            'username' => ['required',Rule::unique('steama_credentials')->ignore($this->id)],
             'password' => 'required',
         ];
     }

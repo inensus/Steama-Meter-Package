@@ -1,9 +1,9 @@
 <?php
 
-
 namespace Inensus\SteamaMeter\Services;
 
 use Exception;
+use GuzzleHttp\Exception\GuzzleException;
 use Illuminate\Support\Facades\Log;
 use Inensus\SteamaMeter\Http\Requests\SteamaMeterApiRequests;
 use Inensus\SteamaMeter\Models\SteamaCredential;
@@ -28,49 +28,57 @@ class SteamaCredentialService
      */
     public function createCredentials()
     {
-        $credentials = $this->credential->newQuery()->first();
-        if (!$credentials){
-            return $this->credential->newQuery()->create();
-        }
-        return $credentials;
+        return $this->credential->newQuery()->firstOrCreate(['id' => 1], [
+            'username' => null,
+            'password' => null,
+            'is_authenticated' => 0,
+            'api_url' => 'https://api.steama.co',
+            'authentication_token' => null
+        ]);
     }
 
     public function getCredentials()
     {
 
-            return $this->credential->newQuery()->first();
+        return $this->credential->newQuery()->first();
     }
 
     public function updateCredentials($data)
     {
         $credential = $this->credential->newQuery()->find($data['id']);
+
+        $credential->update([
+            'username' => $data['username'],
+            'password' => $data['password'],
+
+        ]);
+        $postParams = [
+            'username' => $data['username'],
+            'password' => $data['password'],
+        ];
         try {
-
-            $credential->update([
-                'username' => $data['username'],
-                'password' => $data['password'],
-
-            ]);
-            $postParams = [
-                'username' => $data['username'],
-                'password' => $data['password'],
-            ];
             $result = $this->steamaApi->token($this->rootUrl, $postParams);
-
             $credential->update([
                 'authentication_token' => $result['token'],
-                'is_authenticated'=>true
+                'is_authenticated' => true
             ]);
-
-             return $credential->fresh();
-        } catch (Exception $e) {
-            $credential->update([
-                'authentication_token' => null,
-                'is_authenticated'=>false
-            ]);
-
-            Log::critical('Error while updating steama credentials', ['message' => $e->getMessage()]);
-            throw new Exception($e->getMessage());
+        } catch (GuzzleException $gException) {
+            if ($gException->getResponse()->getStatusCode() === 400) {
+                $credential->is_authenticated = false;
+                $credential->authentication_token = null;
+            } else {
+                $credential->is_authenticated = null;
+                $credential->authentication_token = null;
+            }
+        } catch (\Exception $exception) {
+            Log::critical(
+                'Unknown exception while authenticating StemacoMeter',
+                ['reason' => $exception->getMessage()]
+            );
+            $credential->is_authenticated = false;
+            $credential->authentication_token = null;
         }
+        $credential->save();
+        return $credential->fresh();
     }
 }

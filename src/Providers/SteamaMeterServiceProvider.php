@@ -2,21 +2,22 @@
 
 namespace Inensus\SteamaMeter\Providers;
 
-
+use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\Collection;
 use Illuminate\Filesystem\Filesystem;
 use Illuminate\Support\ServiceProvider;
 use Inensus\SteamaMeter\Console\Commands\InstallPackage;
-use Inensus\SteamaMeter\Console\Commands\SteamaMeterTransactionSync;
-use Inensus\SteamaMeter\Console\Commands\SteamaMeterUpdatesGetter;
-use Inensus\SteamaMeter\Console\Kernel;
+use Inensus\SteamaMeter\Console\Commands\SteamaMeterDataSynchronizer;
+use Inensus\SteamaMeter\Console\Commands\SteamaSmsNotifier;
 use Inensus\SteamaMeter\Models\SteamaAssetRatesPaymentPlan;
 use Inensus\SteamaMeter\Models\SteamaCustomerBasisTimeOfUsage;
 use Inensus\SteamaMeter\Models\SteamaFlatRatePaymentPlan;
 use Inensus\SteamaMeter\Models\SteamaHybridPaymentPlan;
 use Inensus\SteamaMeter\Models\SteamaMinimumTopUpRequirementsPaymentPlan;
+use Inensus\SteamaMeter\Models\SteamaSmsSetting;
 use Inensus\SteamaMeter\Models\SteamaSubscriptionPaymentPlan;
+use Inensus\SteamaMeter\Models\SteamaSyncSetting;
 use Inensus\SteamaMeter\Models\SteamaTariffOverridePaymentPlan;
 use Inensus\SteamaMeter\Models\SteamaTransaction;
 use Inensus\SteamaMeter\SteamaMeterApi;
@@ -33,10 +34,17 @@ class SteamaMeterServiceProvider extends ServiceProvider
             $this->publishMigrations($filesystem);
             $this->commands([
                 InstallPackage::class,
-                SteamaMeterTransactionSync::class,
-                SteamaMeterUpdatesGetter::class
+                SteamaMeterDataSynchronizer::class,
+                SteamaSmsNotifier::class
+
             ]);
         }
+        $this->app->booted(function ($app) {
+            $app->make(Schedule::class)->command('steama-meter:dataSync')->withoutOverlapping(50)
+                ->appendOutputTo(storage_path('logs/cron.log'));
+            $app->make(Schedule::class)->command('steama-meter:smsNotifier')->withoutOverlapping(50)
+                ->appendOutputTo(storage_path('logs/cron.log'));
+        });
         Relation::morphMap(
             [
                 'flat_rate' => SteamaFlatRatePaymentPlan::class,
@@ -46,8 +54,11 @@ class SteamaMeterServiceProvider extends ServiceProvider
                 'asset_rates' => SteamaAssetRatesPaymentPlan::class,
                 'tariff_override' => SteamaTariffOverridePaymentPlan::class,
                 'customer_time_of_usage' => SteamaCustomerBasisTimeOfUsage::class,
-                'steama_transaction' => SteamaTransaction::class
-            ]);
+                'steama_transaction' => SteamaTransaction::class,
+                'sync_setting' => SteamaSyncSetting::class,
+                'sms_setting' => SteamaSmsSetting::class,
+            ]
+        );
     }
 
     public function register()
@@ -59,12 +70,6 @@ class SteamaMeterServiceProvider extends ServiceProvider
         $this->app->singleton('SteamaMeterApi', static function ($app) {
             return new SteamaMeterApi(new Client());
         });
-
-        $this->app->singleton('Kernel', function ($app) {
-            $dispatcher = $app->make(\Illuminate\Contracts\Events\Dispatcher::class);
-            return new Kernel($app, $dispatcher);
-        });
-        $this->app->make('Kernel');
     }
 
     public function publishConfigFiles()
@@ -77,16 +82,15 @@ class SteamaMeterServiceProvider extends ServiceProvider
     public function publishVueFiles()
     {
         $this->publishes([
-            __DIR__ . '/../resources/assets' => resource_path('assets/js/plugins/steama-meter'
-            ),
+            __DIR__ . '/../resources/assets' => resource_path('assets/js/plugins/steama-meter'),
         ], 'vue-components');
     }
 
     public function publishMigrations($filesystem)
     {
         $this->publishes([
-           __DIR__.'/../../database/migrations/create_steama_tables.php.stub' => $this->getMigrationFileName($filesystem),
-            ], 'migrations');
+            __DIR__ . '/../../database/migrations/create_steama_tables.php.stub' => $this->getMigrationFileName($filesystem),
+        ], 'migrations');
     }
 
     protected function getMigrationFileName(Filesystem $filesystem): string
@@ -98,6 +102,4 @@ class SteamaMeterServiceProvider extends ServiceProvider
             })->push($this->app->databasePath() . "/migrations/{$timestamp}_create_steama_tables.php")
             ->first();
     }
-
-
 }

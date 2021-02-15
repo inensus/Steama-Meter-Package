@@ -1,13 +1,12 @@
 <?php
 
-
 namespace Inensus\SteamaMeter\Services;
-
 
 use App\Http\Services\AddressService;
 use App\Models\City;
 use App\Models\ConnectionType;
 use App\Models\Person\Person;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Log;
 use Inensus\SteamaMeter\Helpers\ApiHelpers;
@@ -22,6 +21,7 @@ use Inensus\SteamaMeter\Models\SteamaPerKwhPaymentPlan;
 use Inensus\SteamaMeter\Models\SteamaSite;
 use Inensus\SteamaMeter\Models\SteamaSubscriptionPaymentPlan;
 use Inensus\SteamaMeter\Models\SteamaUserType;
+use Inensus\SteamaMeter\Models\SyncStatus;
 use Inensus\StemaMeter\Exceptions\ModelNotFoundException;
 use Inensus\StemaMeter\Exceptions\SteamaApiResponseException;
 
@@ -44,6 +44,9 @@ class SteamaCustomerService implements ISynchronizeService
     private $bitharvesterService;
     private $stmSite;
     private $city;
+    private $steamaSyncSettingService;
+    private $steamaSyncActionService;
+    private $steamaSmsNotifiedCustomerService;
 
     public function __construct(
         SteamaCustomer $steamaCustomerModel,
@@ -61,7 +64,10 @@ class SteamaCustomerService implements ISynchronizeService
         SteamaSite $steamaSite,
         SteamaBitharvesterService $bitharvesterService,
         SteamaSite $stmSite,
-        City $city
+        City $city,
+        SteamaSyncSettingService $steamaSyncSettingService,
+        StemaSyncActionService $steamaSyncActionService,
+        SteamaSmsNotifiedCustomerService $steamaSmsNotifiedCustomerService
     ) {
         $this->customer = $steamaCustomerModel;
         $this->apiHelpers = $apiHelpers;
@@ -79,6 +85,9 @@ class SteamaCustomerService implements ISynchronizeService
         $this->bitharvesterService = $bitharvesterService;
         $this->stmSite = $stmSite;
         $this->city = $city;
+        $this->steamaSyncSettingService = $steamaSyncSettingService;
+        $this->steamaSyncActionService = $steamaSyncActionService;
+        $this->steamaSmsNotifiedCustomerService = $steamaSmsNotifiedCustomerService;
     }
 
     public function getCustomers($request)
@@ -95,76 +104,59 @@ class SteamaCustomerService implements ISynchronizeService
 
     public function sync()
     {
+        $synSetting = $this->steamaSyncSettingService->getSyncSettingsByActionName('Customers');
+        $syncAction = $this->steamaSyncActionService->getSyncActionBySynSettingId($synSetting->id);
         try {
             $syncCheck = $this->syncCheck(true);
-            if (!$syncCheck['result']) {
-                $customers = $syncCheck['data'];
-                foreach ($customers as $key => $customer) {
-                    $registeredStmCustomer = $this->customer->newQuery()->where('customer_id',
-                        $customer['id'])->first();
+            $userTypes = $this->userType->newQuery()->get();
+            $syncCheck['data']->filter(function ($value) {
+                return $value['syncStatus'] === 3;
+            })->each(function ($customer) use ($userTypes) {
+                $person = $this->createRelatedPerson($customer);
+                $userType = $userTypes->where('syntax', $customer['user_type'])->first();
+                $this->customer->newQuery()->create([
+                    'customer_id' => $customer['id'],
+                    'mpm_customer_id' => $person->id,
+                    'user_type_id' => $userType->id,
+                    'energy_price' => floatval($customer['energy_price']),
+                    'low_balance_warning' => floatval($customer['low_balance_warning']),
+                    'account_balance' => floatval($customer['account_balance']),
+                    'site_id' => $customer['site'],
+                    'hash' => $customer['hash']
+                ]);
+                $this->setStmCustomerPaymentPlan($customer);
+            });
 
-                    $stmCustomerHash = $this->steamaCustomerHasher($customer);
-
-                    $userType = $this->userType->newQuery()->where('syntax', $customer['user_type'])->first();
-                    if ($registeredStmCustomer) {
-                        $isHashChanged = $registeredStmCustomer->hash === $stmCustomerHash ? false : true;
-                        $relatedPerson = $this->person->newQuery()->where('id',
-                            $registeredStmCustomer->mpm_customer_id)->first();
-                        if (!$relatedPerson) {
-                            $person = $this->createRelatedPerson($customer);
-
-                            $registeredStmCustomer->update([
-                                'customer_id' => $customer['id'],
-                                'mpm_customer_id' => $person->id,
-                                'user_type_id' => $userType->id,
-                                'energy_price' => floatval($customer['energy_price']),
-                                'low_balance_warning' => floatval($customer['low_balance_warning']),
-                                'site_id' => $customer['site'],
-                                'hash' => $stmCustomerHash
-                            ]);
-                            $this->setStmCustomerPaymentPlan($customer);
-                        } else {
-                            if ($relatedPerson && $isHashChanged) {
-
-                                $this->updateRelatedPerson($customer, $relatedPerson);
-                                $registeredStmCustomer->update([
-                                    'customer_id' => $customer['id'],
-                                    'mpm_customer_id' => $relatedPerson->id,
-                                    'user_type_id' => $userType->id,
-                                    'energy_price' => floatval($customer['energy_price']),
-                                    'low_balance_warning' => floatval($customer['low_balance_warning']),
-                                    'site_id' => $customer['site'],
-                                    'hash' => $stmCustomerHash
-                                ]);
-                                $this->setStmCustomerPaymentPlan($customer);
-                            } else {
-                                continue;
-                            }
-                        }
-                    } else {
-
-                        $person = $this->createRelatedPerson($customer);
-                        $this->customer->newQuery()->create([
-                            'customer_id' => $customer['id'],
-                            'mpm_customer_id' => $person->id,
-                            'user_type_id' => $userType->id,
-                            'energy_price' => floatval($customer['energy_price']),
-                            'low_balance_warning' => floatval($customer['low_balance_warning']),
-                            'site_id' => $customer['site'],
-                            'hash' => $stmCustomerHash
-                        ]);
-                        $this->setStmCustomerPaymentPlan($customer);
-                    }
-                }
-
-            }
+            $syncCheck['data']->filter(function ($value) {
+                return $value['syncStatus'] === 2;
+            })->each(function ($customer) use ($userTypes) {
+                $person = is_null($customer['relatedPerson']) ? $this->createRelatedPerson($customer) : $this->updateRelatedPerson(
+                    $customer,
+                    $customer['relatedPerson']
+                );
+                $userType = $userTypes->where('syntax', $customer['user_type'])->first();
+                $customer['registeredStmCustomer']->update([
+                    'customer_id' => $customer['id'],
+                    'mpm_customer_id' => $person->id,
+                    'user_type_id' => $userType->id,
+                    'energy_price' => floatval($customer['energy_price']),
+                    'low_balance_warning' => floatval($customer['low_balance_warning']),
+                    'account_balance' => floatval($customer['account_balance']),
+                    'site_id' => $customer['site'],
+                    'hash' => $customer['hash']
+                ]);
+                $this->setStmCustomerPaymentPlan($customer);
+                $this->steamaSmsNotifiedCustomerService->removeLowBalancedCustomer($customer['registeredStmCustomer']);
+            });
+            $this->steamaSyncActionService->updateSyncAction($syncAction, $synSetting, true);
             return $this->customer->newQuery()->with([
                 'mpmPerson.addresses',
                 'site.mpmMiniGrid'
             ])->paginate(config('steama.paginate'));
         } catch (Exception $e) {
+            $this->steamaSyncActionService->updateSyncAction($syncAction, $synSetting, false);
             Log::critical('Steama customers sync failed.', ['Error :' => $e->getMessage()]);
-            throw  new Exception ($e->getMessage());
+            throw  new Exception($e->getMessage());
         }
     }
 
@@ -173,6 +165,7 @@ class SteamaCustomerService implements ISynchronizeService
         try {
             $url = $this->rootUrl . '?page=1&page_size=100';
             $result = $this->steamaApi->get($url);
+
             $customers = $result['results'];
             while ($result['next']) {
                 $url = $this->rootUrl . '?' . explode('?', $result['next'])[1];
@@ -181,40 +174,36 @@ class SteamaCustomerService implements ISynchronizeService
                     array_push($customers, $customer);
                 }
             }
-            $stmCustomers = $this->customer->newQuery()->get();
-            $stmCustomersCount = count($stmCustomers);
-            $customersCount = count($customers);
-            if ($stmCustomersCount === $customersCount) {
-
-                foreach ($customers as $key => $customer) {
-                    $registeredStmCustomer = $this->customer->newQuery()->where('customer_id',
-                        $customer['id'])->first();
-                    if ($registeredStmCustomer) {
-                        $customerHash = $this->steamaCustomerHasher($customer);
-                        $stmCustomerHash = $registeredStmCustomer->hash;
-                        if ($customerHash !== $stmCustomerHash) {
-                            break;
-                        } else {
-                            $customersCount--;
-                        }
-                    } else {
-                        break;
-                    }
-                }
-                if ($customersCount === 0) {
-                    return $returnData ? ['data' => $customers, 'result' => true] : ['result' => true];
-                }
-                return $returnData ? ['data' => $customers, 'result' => false] : ['result' => false];
-
-            } else {
-                return $returnData ? ['data' => $customers, 'result' => false] : ['result' => false];
-            }
         } catch (Exception $e) {
             if ($returnData) {
                 return ['result' => false];
             }
-            throw  new Exception ($e->getMessage());
+            throw  new Exception($e->getMessage());
         }
+        $customersCollection = collect($customers);
+        $stmCustomers = $this->customer->newQuery()->get();
+        $people = $this->person->newQuery()->get();
+        $customersCollection->transform(function ($customer) use ($stmCustomers, $people) {
+            $registeredStmCustomer = $stmCustomers->firstWhere('customer_id', $customer['id']);
+            $relatedPerson = null;
+            $customerHash = $this->steamaCustomerHasher($customer);
+            if ($registeredStmCustomer) {
+                $customer['syncStatus'] = $customerHash === $registeredStmCustomer->hash ? SyncStatus::Synced : SyncStatus::Modified;
+                $relatedPerson = $people->where('id', $registeredStmCustomer->mpm_customer_id)->first();
+            } else {
+                $customer['syncStatus'] = SyncStatus::NotRegisteredYet;
+            }
+            $customer['hash'] = $customerHash;
+            $customer['relatedPerson'] = $relatedPerson;
+            $customer['registeredStmCustomer'] = $registeredStmCustomer;
+
+            return $customer;
+        });
+        $customerSyncStatus = $customersCollection->whereNotIn('syncStatus', 1)->count();
+        if ($customerSyncStatus) {
+            return $returnData ? ['data' => $customersCollection, 'result' => false] : ['result' => false];
+        }
+        return $returnData ? ['data' => $customersCollection, 'result' => true] : ['result' => true];
     }
 
     public function createRelatedPerson($customer)
@@ -245,7 +234,6 @@ class SteamaCustomerService implements ISynchronizeService
         $address = $addressService->instantiate($addressParams);
         $addressService->assignAddressToOwner($person, $address);
         return $person;
-
     }
 
     public function updateRelatedPerson($customer, $person)
@@ -263,6 +251,7 @@ class SteamaCustomerService implements ISynchronizeService
             'street' => $customer['site_name'] ? $customer['site_name'] : null,
             'city_id' => $customerCity->id
         ]);
+        return $person;
     }
 
     public function createSteamaCustomer($meterInfo)
@@ -271,8 +260,10 @@ class SteamaCustomerService implements ISynchronizeService
         $steamaSite = $this->steamaSite->newQuery()->where('mpm_mini_grid_id', $miniGrid->id)->first();
         $person = $meterInfo->owner;
         $personAddress = $person->addresses->where('is_primary', 1)->first();
-        $userType = $this->userType->newQuery()->where('mpm_connection_type_id',
-            $meterInfo->connection_type_id)->first();
+        $userType = $this->userType->newQuery()->where(
+            'mpm_connection_type_id',
+            $meterInfo->connection_type_id
+        )->first();
         $bitHarvesterId = $this->bitharvesterService->getBitharvester($steamaSite->id)['id'];
         $postParams = [
             'first_name' => $person->name,
@@ -295,7 +286,6 @@ class SteamaCustomerService implements ISynchronizeService
             'site_id' => $customer['site'],
             'hash' => $customerHash,
         ]);
-
     }
 
     public function syncTransactionCustomer($stmCustomerId)
@@ -345,8 +335,11 @@ class SteamaCustomerService implements ISynchronizeService
                 ->WhereHas('site.mpmMiniGrid', function ($q) use ($searchTerm) {
                     $q->where('name', 'LIKE', '%' . $searchTerm . '%');
                 })->orWhereHas('mpmPerson', function ($q) use ($searchTerm) {
-                    $q->where('name', 'LIKE', '%' . $searchTerm . '%')->orWhere('surname', 'LIKE',
-                        '%' . $searchTerm . '%');
+                    $q->where('name', 'LIKE', '%' . $searchTerm . '%')->orWhere(
+                        'surname',
+                        'LIKE',
+                        '%' . $searchTerm . '%'
+                    );
                 })->paginate(15);
         }
         return $this->customer->newQuery()->with(['mpmPerson.addresses', 'site.mpmMiniGrid'])
@@ -355,9 +348,7 @@ class SteamaCustomerService implements ISynchronizeService
             })->orWhereHas('mpmPerson', function ($q) use ($searchTerm) {
                 $q->where('name', 'LIKE', '%' . $searchTerm . '%')->orWhere('surname', 'LIKE', '%' . $searchTerm . '%');
             })->get();
-
     }
-
 
     public function setStmCustomerPaymentPlan($customer)
     {
@@ -365,8 +356,10 @@ class SteamaCustomerService implements ISynchronizeService
 
         switch ($plan) {
             case "Subscription Plan":
-                $customerBasisPlan = $this->customerBasisPaymentPlan->newQuery()->with('paymentPlanSubscription')->where('customer_id',
-                    $customer['id'])->first();
+                $customerBasisPlan = $this->customerBasisPaymentPlan->newQuery()->with('paymentPlanSubscription')->where(
+                    'customer_id',
+                    $customer['id']
+                )->first();
                 if ($customerBasisPlan) {
                     $customerBasisPlan->paymentPlanSubscription()->delete();
                     $customerBasisPlan->delete();
@@ -375,8 +368,10 @@ class SteamaCustomerService implements ISynchronizeService
                 break;
 
             case "Hybrid":
-                $customerBasisPlan = $this->customerBasisPaymentPlan->newQuery()->with('paymentPlanSubscription')->where('customer_id',
-                    $customer['id'])->first();
+                $customerBasisPlan = $this->customerBasisPaymentPlan->newQuery()->with('paymentPlanSubscription')->where(
+                    'customer_id',
+                    $customer['id']
+                )->first();
                 if ($customerBasisPlan) {
                     $customerBasisPlan->paymentPlanHybrid()->delete();
                     $customerBasisPlan->delete();
@@ -385,8 +380,10 @@ class SteamaCustomerService implements ISynchronizeService
                 $this->setHybridPlan($customer);
                 break;
             case "Minimum Top-Up":
-                $customerBasisPlan = $this->customerBasisPaymentPlan->newQuery()->with('paymentPlanMinimumTopUp')->where('customer_id',
-                    $customer['id'])->first();
+                $customerBasisPlan = $this->customerBasisPaymentPlan->newQuery()->with('paymentPlanMinimumTopUp')->where(
+                    'customer_id',
+                    $customer['id']
+                )->first();
                 if ($customerBasisPlan) {
                     $customerBasisPlan->paymentPlanMinimumTopUp()->delete();
                     $customerBasisPlan->delete();
@@ -395,8 +392,10 @@ class SteamaCustomerService implements ISynchronizeService
                 $this->setMinimumTopUpPlan($customer);
                 break;
             case "Per kWh":
-                $customerBasisPlan = $this->customerBasisPaymentPlan->newQuery()->with('paymentPlanPerKwh')->where('customer_id',
-                    $customer['id'])->first();
+                $customerBasisPlan = $this->customerBasisPaymentPlan->newQuery()->with('paymentPlanPerKwh')->where(
+                    'customer_id',
+                    $customer['id']
+                )->first();
                 if ($customerBasisPlan) {
                     $customerBasisPlan->paymentPlanPerKwh()->delete();
                     $customerBasisPlan->delete();
@@ -404,8 +403,10 @@ class SteamaCustomerService implements ISynchronizeService
                 $this->setPerKwhPlan($customer);
                 break;
             default:
-                $customerBasisPlan = $this->customerBasisPaymentPlan->newQuery()->with('paymentPlanFlatRate')->where('customer_id',
-                    $customer['id'])->first();
+                $customerBasisPlan = $this->customerBasisPaymentPlan->newQuery()->with('paymentPlanFlatRate')->where(
+                    'customer_id',
+                    $customer['id']
+                )->first();
                 if ($customerBasisPlan) {
                     $customerBasisPlan->paymentPlanFlatRate()->delete();
                     $customerBasisPlan->delete();
@@ -501,9 +502,23 @@ class SteamaCustomerService implements ISynchronizeService
 
     public function getSteamaCustomerName($customerId)
     {
-        $stmCustomer= $this->customer->newQuery()->with('mpmPerson')->where('customer_id', $customerId)->first();
+        $stmCustomer = $this->customer->newQuery()->with('mpmPerson')->where('customer_id', $customerId)->first();
 
-        return ['name'=>$stmCustomer->mpmPerson->name . ' '. $stmCustomer->mpmPerson->surname];
+        return ['name' => $stmCustomer->mpmPerson->name . ' ' . $stmCustomer->mpmPerson->surname];
+    }
+
+    public function getSteamaCustomersWithAddress($lowBalanceMin)
+    {
+
+        return $this->customer->newQuery()->with([
+            'mpmPerson.addresses'
+        ])->whereHas('mpmPerson.addresses', function ($q) {
+            return $q->where('is_primary', 1);
+        })->where(
+            'updated_at',
+            '>=',
+            Carbon::now()->subMinutes($lowBalanceMin)
+        )->get();
     }
 
     private function steamaCustomerHasher($steamaCustomer)
@@ -519,9 +534,8 @@ class SteamaCustomerService implements ISynchronizeService
             $steamaCustomer['is_field_manager'],
             $steamaCustomer['payment_plan'],
             $steamaCustomer['TOU_hours'],
-            $steamaCustomer['low_balance_warning']
+            $steamaCustomer['low_balance_warning'],
+            $steamaCustomer['account_balance'],
         ]);
     }
-
-
 }

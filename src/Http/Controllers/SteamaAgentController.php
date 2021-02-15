@@ -13,7 +13,7 @@ class SteamaAgentController extends Controller implements IBaseController
     private $agentService;
     public function __construct(SteamaAgentService $agentService)
     {
-        $this->agentService=$agentService;
+        $this->agentService = $agentService;
     }
 
     public function index(Request $request): SteamaResource
@@ -22,12 +22,12 @@ class SteamaAgentController extends Controller implements IBaseController
         return new SteamaResource($customers);
     }
     //
-    public function sync():SteamaResource
+    public function sync(): SteamaResource
     {
         return new SteamaResource($this->agentService->sync());
     }
 
-    public function checkSync():SteamaResource
+    public function checkSync(): SteamaResource
     {
         return new SteamaResource($this->agentService->syncCheck());
     }

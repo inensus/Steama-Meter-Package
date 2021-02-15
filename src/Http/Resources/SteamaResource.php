@@ -5,7 +5,7 @@ namespace Inensus\SteamaMeter\Http\Resources;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Http\Request;
 
-class SteamaResource  extends JsonResource
+class SteamaResource extends JsonResource
 {
     /**
      * Transform the resource into an array.
@@ -18,5 +18,3 @@ class SteamaResource  extends JsonResource
         return parent::toArray($request);
     }
 }
-
-

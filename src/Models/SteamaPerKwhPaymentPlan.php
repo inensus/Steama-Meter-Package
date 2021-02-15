@@ -1,9 +1,6 @@
 <?php
 
-
 namespace Inensus\SteamaMeter\Models;
-
-
 
 class SteamaPerKwhPaymentPlan extends BaseModel
 {

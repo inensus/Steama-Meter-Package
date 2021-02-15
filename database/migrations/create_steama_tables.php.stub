@@ -57,6 +57,7 @@ class CreateSteamaTables extends Migration
             $table->integer('customer_id')->unique();
             $table->integer('mpm_customer_id')->unique();
             $table->decimal('energy_price')->default(0);
+            $table->decimal('account_balance')->default(0);
             $table->decimal('low_balance_warning')->default(0);
             $table->string('hash')->nullable();
             $table->timestamps();
@@ -160,6 +161,47 @@ class CreateSteamaTables extends Migration
             $table->string('syntax');
             $table->timestamps();
         });
+
+
+        Schema::create('steama_sync_actions', function (Blueprint $table) {
+            $table->increments('id');
+            $table->integer('sync_setting_id');
+            $table->integer('attempts')->default(0);
+            $table->dateTime('last_sync')->nullable();
+            $table->dateTime('next_sync')->nullable();
+            $table->timestamps();
+        });
+
+        Schema::create('steama_settings', function (Blueprint $table) {
+            $table->increments('id');
+            $table->integer('setting_id');
+            $table->string('setting_type');
+            $table->timestamps();
+        });
+
+        Schema::create('steama_sms_settings', function (Blueprint $table) {
+            $table->increments('id');
+            $table->string('state')->unique();
+            $table->integer('not_send_elder_than_mins');
+            $table->boolean('enabled')->default(true);
+            $table->timestamps();
+        });
+
+        Schema::create('steama_sync_settings', function (Blueprint $table) {
+            $table->increments('id');
+            $table->string('action_name')->unique();
+            $table->string('sync_in_value_str');
+            $table->integer('sync_in_value_num');
+            $table->integer('max_attempts')->default(3);
+            $table->timestamps();
+        });
+        Schema::create('steama_sms_notified_customers', function (Blueprint $table) {
+            $table->increments('id');
+            $table->integer('customer_id');
+            $table->string('notify_type');
+            $table->string('notify_id')->nullable()->unique();
+            $table->timestamps();
+        });
     }
     public function down()
     {
@@ -183,6 +225,10 @@ class CreateSteamaTables extends Migration
         Schema::dropIfExists('steama_tariffs');
         Schema::dropIfExists('steama_transactions');
         Schema::dropIfExists('steama_user_types');
+        Schema::dropIfExists('stema_sync_actions');
+        Schema::dropIfExists('steama_settings');
+        Schema::dropIfExists('steama_sms_settings');
+        Schema::dropIfExists('steama_sync_settings');
 
 
     }
