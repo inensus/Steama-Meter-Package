@@ -9,13 +9,15 @@ use Inensus\SteamaMeter\Services\SteamaAgentService;
 use Inensus\SteamaMeter\Services\SteamaCredentialService;
 use Inensus\SteamaMeter\Services\SteamaSiteLevelPaymentPlanTypeService;
 use Inensus\SteamaMeter\Services\SteamaSiteService;
+use Inensus\SteamaMeter\Services\SteamaSmsSettingService;
+use Inensus\SteamaMeter\Services\SteamaSyncSettingService;
 use Inensus\SteamaMeter\Services\SteamaTariffService;
 use Inensus\SteamaMeter\Services\SteamaUserTypeService;
 
 class InstallPackage extends Command
 {
     protected $signature = 'steama-meter:install';
-    protected $description = 'Install SteamaMeter Package';
+    protected $description = 'Install Steamaco Meter Package';
 
     private $menuItemService;
     private $agentService;
@@ -25,7 +27,8 @@ class InstallPackage extends Command
     private $userTypeService;
     private $apiHelpers;
     private $siteService;
-
+    private $smsSettingService;
+    private $syncSettingService;
     public function __construct(
         MenuItemService $menuItemService,
         SteamaAgentService $agentService,
@@ -34,7 +37,9 @@ class InstallPackage extends Command
         SteamaTariffService $tariffService,
         SteamaUserTypeService $userTypeService,
         ApiHelpers $apiHelpers,
-        SteamaSiteService $siteService
+        SteamaSiteService $siteService,
+        SteamaSmsSettingService $smsSettingService,
+        SteamaSyncSettingService $syncSettingService
     ) {
         parent::__construct();
         $this->apiHelpers = $apiHelpers;
@@ -44,13 +49,14 @@ class InstallPackage extends Command
         $this->paymentPlanService = $paymentPlanService;
         $this->tariffService = $tariffService;
         $this->userTypeService = $userTypeService;
-        $this->siteService=$siteService;
-
+        $this->siteService = $siteService;
+        $this->smsSettingService = $smsSettingService;
+        $this->syncSettingService = $syncSettingService;
     }
 
     public function handle(): void
     {
-        $this->info('Installing SteamaMeter Integration Package\n');
+        $this->info('Installing Steamaco Meter Integration Package\n');
 
         $this->info('Copying migrations\n');
         $this->call('vendor:publish', [
@@ -86,20 +92,21 @@ class InstallPackage extends Command
         $this->call('routes:generate');
 
         $menuItems = $this->menuItemService->createMenuItems();
-        if(array_key_exists('menuItem',$menuItems)){
+        if (array_key_exists('menuItem', $menuItems)) {
             $this->call('menu-items:generate', [
                 'menuItem' => $menuItems['menuItem'],
                 'subMenuItems' => $menuItems['subMenuItems'],
             ]);
         }
-
-         $this->call('sidebar:generate');
+        $this->syncSettingService->createDefaultSettings();
+        $this->smsSettingService->createDefaultSettings();
+        $this->call('sidebar:generate');
 
         $this->info('Package installed successfully..');
 
-        if(!$this->siteService->checkLocationAvailability()){
+        if (!$this->siteService->checkLocationAvailability()) {
             $this->warn('------------------------------');
-            $this->warn("Steama Meter package needs least one registered Cluster.");
+            $this->warn("Steamaco Meter package needs least one registered Cluster.");
             $this->warn("If you have no Cluster, please navigate to #Locations# section and register your locations.");
         }
     }
