@@ -89,21 +89,21 @@ export default {
             await this.credentialService.getCredential()
         },
         async submitCredentialForm () {
+            
             let validator = await this.$validator.validateAll('Credential-Form')
-            if (validator) {
-                try {
-                    this.loading = true
-                    await this.credentialService.updateCredential()
-                    this.loading = false
-                    this.alertNotify('success', 'Credentials updated successfully.')
-
-                } catch (e) {
-
-                    this.loading = false
-                    this.alertNotify('error', e.message)
-                }
-                EventBus.$emit('credentialUpdated')
+            if (!validator) {
+                return
             }
+            try {
+                this.loading = true
+                const updatedData = await this.credentialService.updateCredential()
+                this.alertNotify(updatedData.alert.type, updatedData.alert.message)
+
+            } catch (e) {
+                this.alertNotify('error', 'MPM failed to verify your request')
+            }
+            EventBus.$emit('credentialUpdated')
+            this.loading = false
         },
         alertNotify (type, message) {
             this.$notify({
