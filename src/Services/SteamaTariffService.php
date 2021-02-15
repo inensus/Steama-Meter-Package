@@ -1,8 +1,6 @@
 <?php
 
-
 namespace Inensus\SteamaMeter\Services;
-
 
 use App\Models\Meter\MeterTariff;
 use Inensus\SteamaMeter\Models\SteamaTariff;
@@ -24,8 +22,8 @@ class SteamaTariffService
      */
     public function createTariff()
     {
-        $meterTariff= $this->meterTariff->newQuery()->where('name','Steama External Tariff')->first();
-        if (!$meterTariff){
+        $meterTariff = $this->meterTariff->newQuery()->where('name', 'Steama External Tariff')->first();
+        if (!$meterTariff) {
             $meterTariff = $this->meterTariff->newQuery()->create([
                 'name' => 'Steama External Tariff',
                 'price' => 0,

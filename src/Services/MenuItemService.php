@@ -2,7 +2,6 @@
 
 namespace Inensus\SteamaMeter\Services;
 
-
 use App\Models\MenuItems;
 
 class MenuItemService
@@ -16,10 +15,10 @@ class MenuItemService
 
     public function createMenuItems()
     {
-       $menuItem= $this->menuItems->newQuery()->where('name','Steama Meter')->first();
-        if (!$menuItem){
+        $menuItem = $this->menuItems->newQuery()->where('name', 'Steama Meter')->first();
+        if (!$menuItem) {
             $menuItem = [
-                'name' => 'Steama Meter',
+                'name' => 'Steamaco Meter',
                 'url_slug' => '',
                 'md_icon' => 'bolt'
             ];
@@ -54,14 +53,14 @@ class MenuItemService
                 'url_slug' => '/steama-meters/steama-agent/page/1',
             ];
             array_push($subMenuItems, $subMenuItem5);
+            $subMenuItem6 = [
+                'name' => 'Settings',
+                'url_slug' => '/steama-meters/steama-setting/page/1',
+            ];
+            array_push($subMenuItems, $subMenuItem6);
             return ['menuItem' => $menuItem, 'subMenuItems' => $subMenuItems];
-        }else{
+        } else {
             return [];
         }
-
-
-
-
-
     }
 }

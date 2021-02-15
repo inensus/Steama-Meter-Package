@@ -1,8 +1,6 @@
 <?php
 
-
 namespace Inensus\SteamaMeter\Http\Requests;
-
 
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -18,7 +16,7 @@ class SteamaCustomerRequest extends FormRequest
     public function rules()
     {
         return [
-            'id' =>['required',Rule::unique('steama_customers')->ignore($this->id)],
+            'id' => ['required',Rule::unique('steama_customers')->ignore($this->id)],
             'low_balance_warning' => 'required',
             'energy_price' => 'required',
         ];

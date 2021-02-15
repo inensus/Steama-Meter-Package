@@ -33,7 +33,6 @@ class SteamaMeterApi implements IManufacturerAPI
         SteamaCredentialService $credentialService,
         SteamaCustomerService $customerService,
         SteamaTransaction $steamaTransaction,
-
         Transaction $transaction
     ) {
         $this->api = $httpClient;
@@ -43,16 +42,20 @@ class SteamaMeterApi implements IManufacturerAPI
         $this->customerService = $customerService;
         $this->steamaTransaction = $steamaTransaction;
 
-        $this->transaction=$transaction;
+        $this->transaction = $transaction;
     }
 
     public function chargeMeter(TransactionDataContainer $transactionContainer): array
     {
-        $meterParameter = $this->meterParameter->newQuery()->with('owner')->where('id',
-            $transactionContainer->meterParameter->id)->firstOrFail();
+        $meterParameter = $this->meterParameter->newQuery()->with('owner')->where(
+            'id',
+            $transactionContainer->meterParameter->id
+        )->firstOrFail();
 
-        $stmCustomer = $this->steamaCustomer->newQuery()->with('paymentPlans')->where('mpm_customer_id',
-            $meterParameter->owner->id)->first();
+        $stmCustomer = $this->steamaCustomer->newQuery()->with('paymentPlans')->where(
+            'mpm_customer_id',
+            $meterParameter->owner->id
+        )->first();
 
         $customerId = $stmCustomer->customer_id;
         $stmCustomer = $this->customerService->syncTransactionCustomer($stmCustomer->id);
@@ -64,7 +67,7 @@ class SteamaMeterApi implements IManufacturerAPI
                 'token' => 'debug-token',
                 'energy' => (float)$transactionContainer->chargedEnergy,
             ];
-        }else{
+        } else {
             $amount = $transactionContainer->totalAmount;
             $postParams = [
                 'amount' => $amount,
@@ -88,14 +91,16 @@ class SteamaMeterApi implements IManufacturerAPI
                     ]
                 );
                 $transactionResult = json_decode((string)$request->getBody(), true);
-                $this->associateManufacturerTransaction($transactionContainer,$transactionResult);
+                $this->associateManufacturerTransaction($transactionContainer, $transactionResult);
             } catch (SteamaApiResponseException $e) {
-                Log::critical('Steama API Transaction Failed',
-                    ['URL :' => $url, 'Body :' => json_encode($postParams), 'message :' => $e->getMessage()]);
+                Log::critical(
+                    'Steama API Transaction Failed',
+                    ['URL :' => $url, 'Body :' => json_encode($postParams), 'message :' => $e->getMessage()]
+                );
                 throw new SteamaApiResponseException($e->getMessage());
             }
 
-            $token=$transactionResult['site_id'].'-'.$transactionResult['category'].'-'.$transactionResult['provider'].'-'.$transactionResult['customer_id'];
+            $token = $transactionResult['site_id'] . '-' . $transactionResult['category'] . '-' . $transactionResult['provider'] . '-' . $transactionResult['customer_id'];
             return [
                 'token' => $token,
                 'energy' => $transactionContainer->chargedEnergy
@@ -105,43 +110,34 @@ class SteamaMeterApi implements IManufacturerAPI
 
     public function clearMeter(Meter $meter)
     {
-
     }
 
-    public function associateManufacturerTransaction(TransactionDataContainer $transactionContainer,$transactionResult=[])
+    public function associateManufacturerTransaction(TransactionDataContainer $transactionContainer, $transactionResult = [])
     {
         $manufacturerTransaction = $this->steamaTransaction->newQuery()->create([
             'transaction_id' => $transactionResult['id'],
             'site_id' => $transactionResult['site_id'],
             'customer_id' => $transactionResult['customer_id'],
             'amount' => $transactionResult['amount'],
-            'category'=>$transactionResult['category'],
-            'provider'=> $transactionResult['provider']??'AP',
-            'timestamp'=>$transactionResult['timestamp'],
-            'synchronization_status'=>$transactionResult['synchronization_status']
+            'category' => $transactionResult['category'],
+            'provider' => $transactionResult['provider'] ?? 'AP',
+            'timestamp' => $transactionResult['timestamp'],
+            'synchronization_status' => $transactionResult['synchronization_status']
         ]);
 
-        $transaction = $this->transaction->newQuery()->with('originalAirtel', 'originalVodacom','orginalAgent','originalThirdParty')->find($transactionContainer->transaction->id);
-        if ($transaction->originalAirtel){
-
+        $transaction = $this->transaction->newQuery()->with('originalAirtel', 'originalVodacom', 'orginalAgent', 'originalThirdParty')->find($transactionContainer->transaction->id);
+        if ($transaction->originalAirtel) {
             $transaction->originalAirtel->associate($manufacturerTransaction);
             $transaction->originalAirtel->save();
-
-        }else if($transaction->originalVodacom){
-
+        } elseif ($transaction->originalVodacom) {
             $transaction->originalVodacom->associate($manufacturerTransaction);
             $transaction->originalVodacom->save();
-
-        }else if($transaction->orginalAgent){
-
+        } elseif ($transaction->orginalAgent) {
             $transaction->orginalAgent->associate($manufacturerTransaction);
             $transaction->orginalAgent->save();
-
-        }else if($transaction->originalThirdParty){
-
+        } elseif ($transaction->originalThirdParty) {
             $transaction->originalThirdParty->associate($manufacturerTransaction);
             $transaction->originalThirdParty->save();
         }
-
     }
 }

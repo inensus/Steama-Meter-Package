@@ -1,8 +1,6 @@
 <?php
 
-
 namespace Inensus\SteamaMeter\Services;
-
 
 use App\Models\ConnectionType;
 use App\Models\SubConnectionType;
@@ -20,7 +18,7 @@ class SteamaUserTypeService
     ) {
         $this->connectionType = $connectionTypeModel;
         $this->userType = $userTypeModel;
-        $this->subConnectionType= $subConnectionType;
+        $this->subConnectionType = $subConnectionType;
     }
 
     /**
@@ -36,17 +34,16 @@ class SteamaUserTypeService
             'INS' => 'Institution'
         ];
         foreach ($connectionTypes as $key => $value) {
+            $connectionType = $this->connectionType->newQuery()->where('name', $value)->first();
 
-            $connectionType= $this->connectionType->newQuery()->where('name',$value)->first();
-
-            if (!$connectionType){
+            if (!$connectionType) {
                 $connectionType = $this->connectionType->newQuery()->create([
                     'name' => $value
                 ]);
             }
 
-            $userType = $this->userType->newQuery()->where('name',$value)->first();
-            if (!$userType){
+            $userType = $this->userType->newQuery()->where('name', $value)->first();
+            if (!$userType) {
                 $this->userType->newQuery()->create([
                     'mpm_connection_type_id' => $connectionType->id,
                     'name' => $value,
@@ -54,16 +51,14 @@ class SteamaUserTypeService
                 ]);
             }
 
-            $subConnectionType=$this->subConnectionType->newQuery()->where('name',$value)->first();
-            if (!$subConnectionType){
+            $subConnectionType = $this->subConnectionType->newQuery()->where('name', $value)->first();
+            if (!$subConnectionType) {
                 $this->subConnectionType->newQuery()->create([
-                    'name'=>$value,
-                    'connection_type_id'=>$connectionType->id,
-                    'tariff_id'=>$tariff->id
+                    'name' => $value,
+                    'connection_type_id' => $connectionType->id,
+                    'tariff_id' => $tariff->id
                 ]);
             }
-
         }
-
     }
 }

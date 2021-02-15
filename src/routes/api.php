@@ -1,5 +1,7 @@
 <?php
+
 use Illuminate\Support\Facades\Route;
+
 Route::group(['prefix' => 'steama-meters'], function () {
     Route::group(['prefix' => 'steama-credential'], function () {
         Route::get('/', 'SteamaCredentialController@show');
@@ -35,5 +37,14 @@ Route::group(['prefix' => 'steama-meters'], function () {
     });
     Route::group(['prefix' => 'steama-transaction'], function () {
         Route::get('/{customer}', 'SteamaTransactionController@index');
+    });
+    Route::group(['prefix' => 'steama-setting'], function () {
+        Route::get('/', 'SteamaSettingController@index');
+        Route::group(['prefix' => 'sms-setting'], function () {
+            Route::put('/', 'SteamaSmsSettingController@update');
+        });
+        Route::group(['prefix' => 'sync-setting'], function () {
+            Route::put('/', 'SteamaSyncSettingController@update');
+        });
     });
 });

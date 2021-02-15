@@ -13,7 +13,7 @@ class SteamaMeterController extends Controller implements IBaseController
     private $meterService;
     public function __construct(SteamaMeterService $meterService)
     {
-        $this->meterService=$meterService;
+        $this->meterService = $meterService;
     }
 
     public function index(Request $request): SteamaResource
@@ -22,12 +22,12 @@ class SteamaMeterController extends Controller implements IBaseController
         return new SteamaResource($customers);
     }
     //
-    public function sync():SteamaResource
+    public function sync(): SteamaResource
     {
         return new SteamaResource($this->meterService->sync());
     }
 
-    public function checkSync():SteamaResource
+    public function checkSync(): SteamaResource
     {
         return new SteamaResource($this->meterService->syncCheck());
     }

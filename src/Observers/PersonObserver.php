@@ -2,7 +2,6 @@
 
 namespace Inensus\SteamaMeter\Observers;
 
-
 use App\Models\Person\Person;
 use Inensus\SteamaMeter\Helpers\ApiHelpers;
 use Inensus\SteamaMeter\Http\Requests\SteamaMeterApiRequests;
@@ -51,13 +50,12 @@ class PersonObserver
             ])->where('id', $personId)->first();
 
             $customerData = [
-                "id"=>$stmCustomer->customer_id,
-                "first_name"=>$person->name,
-                "last_name"=>$person->surname,
-                "telephone"=>$customer->addresses[0]->phone,
+                "id" => $stmCustomer->customer_id,
+                "first_name" => $person->name,
+                "last_name" => $person->surname,
+                "telephone" => $customer->addresses[0]->phone,
             ];
-         $this->stmCustomerService->updateSteamaCustomerInfo($stmCustomer,$customerData);
+            $this->stmCustomerService->updateSteamaCustomerInfo($stmCustomer, $customerData);
         }
     }
-
 }

@@ -4,11 +4,10 @@ namespace Inensus\SteamaMeter\Models;
 
 use App\Models\Transaction\ISubTransaction;
 use App\Models\Transaction\ThirdPartyTransaction;
-use App\Transaction\AgentTransaction;
-use App\Transaction\AirtelTransaction;
+use App\Models\Transaction\AgentTransaction;
+use App\Models\Transaction\AirtelTransaction;
 use App\Transaction\VodacomTransaction;
 use Illuminate\Database\Eloquent\Relations\MorphOne;
-
 
 class SteamaTransaction extends BaseModel implements ISubTransaction
 {
@@ -17,7 +16,7 @@ class SteamaTransaction extends BaseModel implements ISubTransaction
 
     public function category()
     {
-        return $this->belongsTo(SteamaTransactionCategory::class,'category_id');
+        return $this->belongsTo(SteamaTransactionCategory::class, 'category_id');
     }
     public function site()
     {

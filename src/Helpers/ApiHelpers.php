@@ -1,9 +1,9 @@
 <?php
+
 namespace Inensus\SteamaMeter\Helpers;
 
 use App\Models\Manufacturer;
 use Inensus\StemaMeter\Exceptions\SteamaApiResponseException;
-
 
 class ApiHelpers
 {
@@ -26,16 +26,17 @@ class ApiHelpers
     }
     public function CheckApiResult($result)
     {
-        if (array_key_exists("detail",$result)) {
+        if (array_key_exists("detail", $result)) {
             throw new SteamaApiResponseException($result['detail']);
         }
-        if (array_key_exists("non_field_errors",$result)) {
+        if (array_key_exists("non_field_errors", $result)) {
             throw new SteamaApiResponseException($result['non_field_errors']);
         }
         return $result;
     }
-    public function makeHash($data) {
+    public function makeHash($data)
+    {
 
-        return md5(implode($data,''));
+        return md5(implode($data, ''));
     }
 }

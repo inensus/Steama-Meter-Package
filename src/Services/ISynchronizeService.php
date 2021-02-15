@@ -1,8 +1,6 @@
 <?php
 
-
 namespace Inensus\SteamaMeter\Services;
-
 
 interface ISynchronizeService
 {

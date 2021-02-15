@@ -12,7 +12,7 @@ class SteamaSiteController extends Controller implements IBaseController
     private $siteService;
     public function __construct(SteamaSiteService $siteService)
     {
-        $this->siteService=$siteService;
+        $this->siteService = $siteService;
     }
 
     public function index(Request $request): SteamaResource
@@ -21,12 +21,12 @@ class SteamaSiteController extends Controller implements IBaseController
         return new SteamaResource($sites);
     }
     //
-    public function sync():SteamaResource
+    public function sync(): SteamaResource
     {
         return new SteamaResource($this->siteService->sync());
     }
 
-    public function checkSync():SteamaResource
+    public function checkSync(): SteamaResource
     {
         return new SteamaResource($this->siteService->syncCheck());
     }
@@ -35,7 +35,7 @@ class SteamaSiteController extends Controller implements IBaseController
     {
         return  $this->siteService->getSitesCount() ;
     }
-    public function location():SteamaResource
+    public function location(): SteamaResource
     {
         return  new SteamaResource($this->siteService->checkLocationAvailability());
     }
