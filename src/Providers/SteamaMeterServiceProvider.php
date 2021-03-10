@@ -2,6 +2,8 @@
 
 namespace Inensus\SteamaMeter\Providers;
 
+use App\Models\Meter\MeterParameter;
+use App\Models\Transaction\Transaction;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\Collection;
@@ -11,6 +13,7 @@ use Inensus\SteamaMeter\Console\Commands\InstallPackage;
 use Inensus\SteamaMeter\Console\Commands\SteamaMeterDataSynchronizer;
 use Inensus\SteamaMeter\Console\Commands\SteamaSmsNotifier;
 use Inensus\SteamaMeter\Models\SteamaAssetRatesPaymentPlan;
+use Inensus\SteamaMeter\Models\SteamaCustomer;
 use Inensus\SteamaMeter\Models\SteamaCustomerBasisTimeOfUsage;
 use Inensus\SteamaMeter\Models\SteamaFlatRatePaymentPlan;
 use Inensus\SteamaMeter\Models\SteamaHybridPaymentPlan;
@@ -20,6 +23,8 @@ use Inensus\SteamaMeter\Models\SteamaSubscriptionPaymentPlan;
 use Inensus\SteamaMeter\Models\SteamaSyncSetting;
 use Inensus\SteamaMeter\Models\SteamaTariffOverridePaymentPlan;
 use Inensus\SteamaMeter\Models\SteamaTransaction;
+use Inensus\SteamaMeter\Services\SteamaCredentialService;
+use Inensus\SteamaMeter\Services\SteamaCustomerService;
 use Inensus\SteamaMeter\SteamaMeterApi;
 use GuzzleHttp\Client;
 
@@ -67,8 +72,23 @@ class SteamaMeterServiceProvider extends ServiceProvider
         $this->app->register(EventServiceProvider::class);
         $this->app->register(ObserverServiceProvider::class);
 
-        $this->app->singleton('SteamaMeterApi', static function ($app) {
-            return new SteamaMeterApi(new Client());
+        $this->app->bind('SteamaMeterApi', function () {
+            $client = new Client();
+            $transaction = new Transaction();
+            $meterParameter = new MeterParameter();
+            $steamaCustomer = new SteamaCustomer();
+            $steamaCredentialService = new SteamaCredentialService();
+            $steamaCustomerService = new SteamaCustomerService();
+            $steamaTransaction = new SteamaTransaction();
+            return new SteamaMeterApi(
+                $client,
+                $meterParameter,
+                $steamaCustomer,
+                $steamaCredentialService,
+                $steamaCustomerService,
+                $steamaTransaction,
+                $transaction
+            );
         });
     }
 
@@ -89,7 +109,8 @@ class SteamaMeterServiceProvider extends ServiceProvider
     public function publishMigrations($filesystem)
     {
         $this->publishes([
-            __DIR__ . '/../../database/migrations/create_steama_tables.php.stub' => $this->getMigrationFileName($filesystem),
+            __DIR__ . '/../../database/migrations/create_steama_tables.php.stub'
+            => $this->getMigrationFileName($filesystem),
         ], 'migrations');
     }
 

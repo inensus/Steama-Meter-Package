@@ -24,7 +24,6 @@ class SteamaMeterApi implements IManufacturerAPI
     private $credentialService;
     private $customerService;
     private $steamaTransaction;
-    private $steamaTransactionCategory;
     private $transaction;
     public function __construct(
         Client $httpClient,
@@ -100,7 +99,10 @@ class SteamaMeterApi implements IManufacturerAPI
                 throw new SteamaApiResponseException($e->getMessage());
             }
 
-            $token = $transactionResult['site_id'] . '-' . $transactionResult['category'] . '-' . $transactionResult['provider'] . '-' . $transactionResult['customer_id'];
+            $token = $transactionResult['site_id'] . '-' .
+                $transactionResult['category'] . '-' .
+                $transactionResult['provider'] . '-' .
+                $transactionResult['customer_id'];
             return [
                 'token' => $token,
                 'energy' => $transactionContainer->chargedEnergy
@@ -112,8 +114,10 @@ class SteamaMeterApi implements IManufacturerAPI
     {
     }
 
-    public function associateManufacturerTransaction(TransactionDataContainer $transactionContainer, $transactionResult = [])
-    {
+    public function associateManufacturerTransaction(
+        TransactionDataContainer $transactionContainer,
+        $transactionResult = []
+    ) {
         $manufacturerTransaction = $this->steamaTransaction->newQuery()->create([
             'transaction_id' => $transactionResult['id'],
             'site_id' => $transactionResult['site_id'],
@@ -124,8 +128,9 @@ class SteamaMeterApi implements IManufacturerAPI
             'timestamp' => $transactionResult['timestamp'],
             'synchronization_status' => $transactionResult['synchronization_status']
         ]);
-
-        $transaction = $this->transaction->newQuery()->with('originalAirtel', 'originalVodacom', 'orginalAgent', 'originalThirdParty')->find($transactionContainer->transaction->id);
+        $transaction = $this->transaction->newQuery()
+            ->with('originalAirtel', 'originalVodacom', 'orginalAgent', 'originalThirdParty')
+            ->find($transactionContainer->transaction->id);
         if ($transaction->originalAirtel) {
             $transaction->originalAirtel->associate($manufacturerTransaction);
             $transaction->originalAirtel->save();

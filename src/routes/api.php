@@ -40,9 +40,19 @@ Route::group(['prefix' => 'steama-meters'], function () {
     });
     Route::group(['prefix' => 'steama-setting'], function () {
         Route::get('/', 'SteamaSettingController@index');
+
         Route::group(['prefix' => 'sms-setting'], function () {
             Route::put('/', 'SteamaSmsSettingController@update');
+            //Sms
+            Route::group(['prefix' => 'sms-body'], static function () {
+                Route::get('/', 'SteamaSmsBodyController@index');
+                Route::put('/', 'SteamaSmsBodyController@update');
+            });
+            Route::group(['prefix' => 'sms-variable-default-value'], static function () {
+                Route::get('/', 'SteamaSmsVariableDefaultValueController@index');
+            });
         });
+
         Route::group(['prefix' => 'sync-setting'], function () {
             Route::put('/', 'SteamaSyncSettingController@update');
         });

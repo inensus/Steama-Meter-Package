@@ -13,8 +13,11 @@ class SteamaSyncSettingService
     private $syncSetting;
     private $setting;
     private $syncActionService;
-    public function __construct(SteamaSyncSetting $syncSetting, SteamaSetting $setting, StemaSyncActionService $syncActionService)
-    {
+    public function __construct(
+        SteamaSyncSetting $syncSetting,
+        SteamaSetting $setting,
+        StemaSyncActionService $syncActionService
+    ) {
         $this->syncSetting = $syncSetting;
         $this->setting = $setting;
         $this->syncActionService = $syncActionService;

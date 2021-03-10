@@ -64,9 +64,10 @@ class MeterParameterListener
             if ($meterInfo->owner) {
                 if ($meterInfo->owner->is_customer == 1) {
                     $customerId = $meterInfo->owner->id;
-                    $steamaCustomer = $this->stmCustomer->newQuery()->whereHas('mpmPerson', function ($q) use ($customerId) {
-                        $q->where('id', $customerId);
-                    })->first();
+                    $steamaCustomer = $this->stmCustomer->newQuery()
+                        ->whereHas('mpmPerson', function ($q) use ($customerId) {
+                            $q->where('id', $customerId);
+                        })->first();
                     if (!$steamaCustomer) {
                         $steamaCustomer =  $this->stmCustomerService->createSteamaCustomer($meterInfo);
                     }
@@ -85,6 +86,9 @@ class MeterParameterListener
 
     public function subscribe(Dispatcher $events)
     {
-        $events->listen('meterparameter.saved', 'Inensus\SteamaMeter\Listeners\MeterParameterListener@onParameterSaved');
+        $events->listen(
+            'meterparameter.saved',
+            'Inensus\SteamaMeter\Listeners\MeterParameterListener@onParameterSaved'
+        );
     }
 }

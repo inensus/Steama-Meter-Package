@@ -107,10 +107,11 @@ class SteamaAgentService implements ISynchronizeService
             $syncCheck['data']->filter(function ($value) {
                 return $value['syncStatus'] === 2;
             })->each(function ($agent) {
-                $relatedAgent = is_null($agent['relatedAgent']) ? $this->createRelatedAgent($agent) : $this->updateRelatedAgent(
-                    $agent,
-                    $agent['relatedAgent']
-                );
+                $relatedAgent = is_null($agent['relatedAgent']) ?
+                    $this->createRelatedAgent($agent) : $this->updateRelatedAgent(
+                        $agent,
+                        $agent['relatedAgent']
+                    );
                 $agent['registeredStmAgent']->update([
                     'agent_id' => $agent['id'],
                     'mpm_agent_id' => $relatedAgent->id,
@@ -161,10 +162,11 @@ class SteamaAgentService implements ISynchronizeService
             $agentHash = $this->steamaAgentHasher($agent);
 
             if ($registeredStmAgent) {
-                $agent['syncStatus'] = $agentHash === $registeredStmAgent->hash ? SyncStatus::Synced : SyncStatus::Modified;
+                $agent['syncStatus'] = $agentHash === $registeredStmAgent->hash ?
+                    SyncStatus::SYNCED : SyncStatus::MODIFIED;
                 $relatedAgent = $agents->where('id', $registeredStmAgent->mpm_agent_id)->first();
             } else {
-                $agent['syncStatus'] = SyncStatus::NotRegisteredYet;
+                $agent['syncStatus'] = SyncStatus::NOT_REGISTERED_YET;
             }
             $agent['hash'] = $agentHash;
             $agent['relatedAgent'] = $relatedAgent;

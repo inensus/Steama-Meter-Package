@@ -14,7 +14,8 @@
   "minimum-stability": "dev",
   "autoload": {
     "psr-4": {
-      "Inensus\\SteamaMeter\\": "src"
+      "Inensus\\SteamaMeter\\": "src",
+      "Inensus\\SteamaMeter\\Tests": "tests"
     }
   },
   "extra": {

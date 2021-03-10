@@ -130,10 +130,11 @@ class SteamaCustomerService implements ISynchronizeService
             $syncCheck['data']->filter(function ($value) {
                 return $value['syncStatus'] === 2;
             })->each(function ($customer) use ($userTypes) {
-                $person = is_null($customer['relatedPerson']) ? $this->createRelatedPerson($customer) : $this->updateRelatedPerson(
-                    $customer,
-                    $customer['relatedPerson']
-                );
+                $person = is_null($customer['relatedPerson']) ?
+                    $this->createRelatedPerson($customer) : $this->updateRelatedPerson(
+                        $customer,
+                        $customer['relatedPerson']
+                    );
                 $userType = $userTypes->where('syntax', $customer['user_type'])->first();
                 $customer['registeredStmCustomer']->update([
                     'customer_id' => $customer['id'],
@@ -188,10 +189,11 @@ class SteamaCustomerService implements ISynchronizeService
             $relatedPerson = null;
             $customerHash = $this->steamaCustomerHasher($customer);
             if ($registeredStmCustomer) {
-                $customer['syncStatus'] = $customerHash === $registeredStmCustomer->hash ? SyncStatus::Synced : SyncStatus::Modified;
+                $customer['syncStatus'] = $customerHash === $registeredStmCustomer->hash ?
+                    SyncStatus::SYNCED : SyncStatus::MODIFIED;
                 $relatedPerson = $people->where('id', $registeredStmCustomer->mpm_customer_id)->first();
             } else {
-                $customer['syncStatus'] = SyncStatus::NotRegisteredYet;
+                $customer['syncStatus'] = SyncStatus::NOT_REGISTERED_YET;
             }
             $customer['hash'] = $customerHash;
             $customer['relatedPerson'] = $relatedPerson;
@@ -356,10 +358,11 @@ class SteamaCustomerService implements ISynchronizeService
 
         switch ($plan) {
             case "Subscription Plan":
-                $customerBasisPlan = $this->customerBasisPaymentPlan->newQuery()->with('paymentPlanSubscription')->where(
-                    'customer_id',
-                    $customer['id']
-                )->first();
+                $customerBasisPlan = $this->customerBasisPaymentPlan->newQuery()
+                    ->with('paymentPlanSubscription')->where(
+                        'customer_id',
+                        $customer['id']
+                    )->first();
                 if ($customerBasisPlan) {
                     $customerBasisPlan->paymentPlanSubscription()->delete();
                     $customerBasisPlan->delete();
@@ -368,10 +371,11 @@ class SteamaCustomerService implements ISynchronizeService
                 break;
 
             case "Hybrid":
-                $customerBasisPlan = $this->customerBasisPaymentPlan->newQuery()->with('paymentPlanSubscription')->where(
-                    'customer_id',
-                    $customer['id']
-                )->first();
+                $customerBasisPlan = $this->customerBasisPaymentPlan->newQuery()
+                    ->with('paymentPlanSubscription')->where(
+                        'customer_id',
+                        $customer['id']
+                    )->first();
                 if ($customerBasisPlan) {
                     $customerBasisPlan->paymentPlanHybrid()->delete();
                     $customerBasisPlan->delete();
@@ -380,10 +384,11 @@ class SteamaCustomerService implements ISynchronizeService
                 $this->setHybridPlan($customer);
                 break;
             case "Minimum Top-Up":
-                $customerBasisPlan = $this->customerBasisPaymentPlan->newQuery()->with('paymentPlanMinimumTopUp')->where(
-                    'customer_id',
-                    $customer['id']
-                )->first();
+                $customerBasisPlan = $this->customerBasisPaymentPlan->newQuery()
+                    ->with('paymentPlanMinimumTopUp')->where(
+                        'customer_id',
+                        $customer['id']
+                    )->first();
                 if ($customerBasisPlan) {
                     $customerBasisPlan->paymentPlanMinimumTopUp()->delete();
                     $customerBasisPlan->delete();
@@ -507,18 +512,13 @@ class SteamaCustomerService implements ISynchronizeService
         return ['name' => $stmCustomer->mpmPerson->name . ' ' . $stmCustomer->mpmPerson->surname];
     }
 
-    public function getSteamaCustomersWithAddress($lowBalanceMin)
+    public function getSteamaCustomersWithAddress()
     {
-
         return $this->customer->newQuery()->with([
             'mpmPerson.addresses'
         ])->whereHas('mpmPerson.addresses', function ($q) {
             return $q->where('is_primary', 1);
-        })->where(
-            'updated_at',
-            '>=',
-            Carbon::now()->subMinutes($lowBalanceMin)
-        )->get();
+        });
     }
 
     private function steamaCustomerHasher($steamaCustomer)

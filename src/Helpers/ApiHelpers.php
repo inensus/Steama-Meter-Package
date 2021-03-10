@@ -24,7 +24,7 @@ class ApiHelpers
             ]);
         }
     }
-    public function CheckApiResult($result)
+    public function checkApiResult($result)
     {
         if (array_key_exists("detail", $result)) {
             throw new SteamaApiResponseException($result['detail']);

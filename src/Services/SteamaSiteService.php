@@ -82,7 +82,8 @@ class SteamaSiteService implements ISynchronizeService
             $syncCheck['data']->filter(function ($value) {
                 return $value['syncStatus'] === 2;
             })->each(function ($site) {
-                $miniGrid = is_null($site['relatedMiniGrid'])  ? $this->creteRelatedMiniGrid($site) : $this->updateRelatedMiniGrid($site, $site['relatedMiniGrid']);
+                $miniGrid = is_null($site['relatedMiniGrid'])  ?
+                    $this->creteRelatedMiniGrid($site) : $this->updateRelatedMiniGrid($site, $site['relatedMiniGrid']);
                 $this->updateGeographicalInformation($miniGrid->id, $site);
                 $site['registeredStmSite']->update([
                     'site_id' => $site['id'],
@@ -129,10 +130,11 @@ class SteamaSiteService implements ISynchronizeService
             $relatedMiniGrid = null;
             $siteHash = $this->steamaSiteHasher($site);
             if ($registeredStmSite) {
-                $site['syncStatus'] =  $siteHash === $registeredStmSite->hash ? SyncStatus::Synced : SyncStatus::Modified;
+                $site['syncStatus'] =  $siteHash === $registeredStmSite->hash ?
+                    SyncStatus::SYNCED : SyncStatus::MODIFIED;
                 $relatedMiniGrid = $miniGrids->find($registeredStmSite->mpm_mini_grid_id);
             } else {
-                $site['syncStatus'] = SyncStatus::NotRegisteredYet;
+                $site['syncStatus'] = SyncStatus::NOT_REGISTERED_YET;
             }
             $site['hash'] = $siteHash;
             $site['relatedMiniGrid'] = $relatedMiniGrid;
@@ -179,7 +181,8 @@ class SteamaSiteService implements ISynchronizeService
                 $q->where('id', $miniGridId);
             }
         )->first();
-        $points = $site['latitude'] === null ? config('steama.geoLocation') : $site['latitude'] . ',' . $site['longitude'];
+        $points = $site['latitude'] === null ?
+            config('steama.geoLocation') : $site['latitude'] . ',' . $site['longitude'];
         $geographicalInformation->update([
             'points' => $points
         ]);
