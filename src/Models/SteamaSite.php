@@ -13,14 +13,12 @@ class SteamaSite extends BaseModel
     {
         return $this->belongsTo(MiniGrid::class, 'mpm_mini_grid_id');
     }
-    function paymentPlans()
+    public function paymentPlans()
     {
-
         return $this->hasMany(SteamaSiteLevelPaymentPlan::class);
     }
-    function agents()
+    public function agents()
     {
-
         return $this->hasMany(SteamaAgent::class);
     }
 }

@@ -77,10 +77,12 @@ class SteamaTransactionsService implements ISynchronizeService
             $lastRecordedTransactionId = 0;
 
             if ($lastCreatedTransaction) {
-                $url = $this->rootUrl . '?ordering=timestamp&created_after=' . Carbon::parse($lastCreatedTransaction->timestamp)->toIso8601ZuluString() . '&page=1&page_size=100';
+                $url = $this->rootUrl . '?ordering=timestamp&created_after=' .
+                    Carbon::parse($lastCreatedTransaction->timestamp)->toIso8601ZuluString() . '&page=1&page_size=100';
                 $lastRecordedTransactionId = $lastCreatedTransaction->transaction_id;
             } else {
-                $url = $this->rootUrl . '?ordering=timestamp&created_before=' . Carbon::now()->toIso8601ZuluString() . '&page=1&page_size=100';
+                $url = $this->rootUrl . '?ordering=timestamp&created_before=' .
+                    Carbon::now()->toIso8601ZuluString() . '&page=1&page_size=100';
             }
             $steamaMeters = $this->steamaMeter->newQuery()->with(['mpmMeter.meterParameter.owner'])->get();
             try {
@@ -201,7 +203,8 @@ class SteamaTransactionsService implements ISynchronizeService
         $thirdPartyTransaction = $this->thirdPartyTransaction->newQuery()->make([
             'transaction_id' => $transaction['id'],
             'status' => $transaction['reversed_by_id'] !== null ? -1 : 1,
-            'description' => $transaction['provider'] === 'AA' ? 'Payment recorded by agent : ' . $transaction['agent_id'] . ' ~Steama Meter' : null,
+            'description' => $transaction['provider'] === 'AA' ?
+                'Payment recorded by agent : ' . $transaction['agent_id'] . ' ~Steama Meter' : null,
         ]);
         $thirdPartyTransaction->manufacturerTransaction()->associate($steamaTransaction);
         $thirdPartyTransaction->save();
@@ -229,7 +232,10 @@ class SteamaTransactionsService implements ISynchronizeService
         $customerEnergyPrice = $stmCustomer->energy_price;
         $chargedEnergy = $mainTransaction->amount / ($customerEnergyPrice);
 
-        $token = $transaction['site_id'] . '-' . $transaction['category'] . '-' . $transaction['provider'] . '-' . $transaction['customer_id'];
+        $token = $transaction['site_id'] . '-' .
+            $transaction['category'] . '-' .
+            $transaction['provider'] . '-' .
+            $transaction['customer_id'];
 
         $token = $this->meterToken->newQuery()->make([
             'token' => $token,

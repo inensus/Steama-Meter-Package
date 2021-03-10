@@ -40,7 +40,7 @@ class SteamaMeterApiRequests
                 ],
             ]
         );
-        return $this->apiHelpers->CheckApiResult(json_decode((string)$request->getBody(), true));
+        return $this->apiHelpers->checkApiResult(json_decode((string)$request->getBody(), true));
     }
     public function token($url, $postParams)
     {
@@ -59,7 +59,7 @@ class SteamaMeterApiRequests
                 ],
             ]
         );
-        return $this->apiHelpers->CheckApiResult(json_decode((string)$request->getBody(), true));
+        return $this->apiHelpers->checkApiResult(json_decode((string)$request->getBody(), true));
     }
     public function post($url, $postParams)
     {
@@ -78,7 +78,7 @@ class SteamaMeterApiRequests
                 ],
             ]
         );
-        return $this->apiHelpers->CheckApiResult(json_decode((string)$request->getBody(), true));
+        return $this->apiHelpers->checkApiResult(json_decode((string)$request->getBody(), true));
     }
 
     public function put($url, $putParams)
@@ -98,7 +98,7 @@ class SteamaMeterApiRequests
                 ],
             ]
         );
-        return $this->apiHelpers->CheckApiResult(json_decode((string)$request->getBody(), true));
+        return $this->apiHelpers->checkApiResult(json_decode((string)$request->getBody(), true));
     }
 
     public function patch($url, $putParams)
@@ -118,7 +118,7 @@ class SteamaMeterApiRequests
                 ],
             ]
         );
-        return $this->apiHelpers->CheckApiResult(json_decode((string)$request->getBody(), true));
+        return $this->apiHelpers->checkApiResult(json_decode((string)$request->getBody(), true));
     }
 
     public function getByParams($url, $params)

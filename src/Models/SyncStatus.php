@@ -4,8 +4,7 @@ namespace Inensus\SteamaMeter\Models;
 
 abstract class SyncStatus
 {
-
-    const Synced = 1;
-    const Modified = 2;
-    const NotRegisteredYet = 3;
+    const SYNCED = 1;
+    const MODIFIED = 2;
+    const NOT_REGISTERED_YET = 3;
 }
