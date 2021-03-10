@@ -7,6 +7,9 @@ import AgentRepository from './AgentRepository'
 import SettingRepository from './SettingRepository'
 import SmsSettingRepository from './SmsSettingRepository'
 import SyncSettingRepository from './SyncSettingRepository'
+import SmsBodiesRepository from './SmsBodiesRepository'
+import SmsVariableDefaultValueRepository from './SmsVariableDefaultValueRepository'
+
 
 const repositories = {
     'paginate': PaginatorRepository,
@@ -17,7 +20,9 @@ const repositories = {
     'agent': AgentRepository,
     'setting': SettingRepository,
     'smsSetting': SmsSettingRepository,
-    'syncSetting': SyncSettingRepository
+    'syncSetting': SyncSettingRepository,
+    'smsBodies':SmsBodiesRepository,
+    'smsVariableDefaultValue':SmsVariableDefaultValueRepository
 }
 export default {
     get: name => repositories[name]

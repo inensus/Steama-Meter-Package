@@ -74,37 +74,53 @@
                             Sms Settings
                         </md-card-header>
                         <md-card-content>
-                            <div v-for="(setting,i) in settingService.list" :key="i">
-                                <div v-if="setting.settingTypeName ==='sms_setting'" class="md-layout md-gutter">
-                                    <div class="md-layout-item  md-xlarge-size-33 md-large-size-33 md-medium-size-33 md-small-size-33">
-                                        <md-field>
-                                            <label>{{setting.settingType.state}}</label>
+                            <md-tabs>
+                                <md-tab @click="tab='main-settings'" id="tab-main-settings" md-label="Main Settings">
+                                    <div v-for="(setting,i) in settingService.list" :key="i">
+                                        <div v-if="setting.settingTypeName ==='sms_setting'"
+                                             class="md-layout md-gutter">
+                                            <div class="md-layout-item  md-xlarge-size-33 md-large-size-33 md-medium-size-33 md-small-size-33">
+                                                <md-field>
+                                                    <label>{{setting.settingType.state}}</label>
 
-                                        </md-field>
-                                    </div>
-                                    <div class="md-layout-item  md-xlarge-size-33 md-large-size-33 md-medium-size-33 md-small-size-33">
-                                        <md-field :class="{'md-invalid': errors.has('send_elder_'+setting.id)}">
-                                            <label for="send_elder">Consider Only (created in last X minutes)</label>
-                                            <md-input
-                                                    :id="'send_elder_'+setting.id"
-                                                    :name="'send_elder_'+setting.id"
-                                                    v-model="setting.settingType.NotSendElderThanMins"
-                                                    type="number"
-                                                    min="10"
-                                                    v-validate="'required|min_value:10'"
-                                            />
-                                            <span class="md-error">{{ errors.first('send_elder_'+setting.id) }}</span>
-                                        </md-field>
-                                    </div>
+                                                </md-field>
+                                            </div>
+                                            <div class="md-layout-item  md-xlarge-size-33 md-large-size-33 md-medium-size-33 md-small-size-33">
+                                                <md-field :class="{'md-invalid': errors.has('send_elder_'+setting.id)}">
+                                                    <label for="send_elder">Consider Only (created in last X
+                                                        minutes)</label>
+                                                    <md-input
+                                                            :id="'send_elder_'+setting.id"
+                                                            :name="'send_elder_'+setting.id"
+                                                            v-model="setting.settingType.NotSendElderThanMins"
+                                                            type="number"
+                                                            min="10"
+                                                            v-validate="'required|min_value:10'"
+                                                    />
+                                                    <span class="md-error">{{ errors.first('send_elder_'+setting.id) }}</span>
+                                                </md-field>
+                                            </div>
 
-                                    <div class="md-layout-item  md-xlarge-size-33 md-large-size-33 md-medium-size-33 md-small-size-33">
-                                        <md-checkbox v-model="setting.settingType.enabled" v-validate="'required'">
-                                            Enabled
-                                        </md-checkbox>
-                                    </div>
+                                            <div class="md-layout-item  md-xlarge-size-33 md-large-size-33 md-medium-size-33 md-small-size-33">
+                                                <md-checkbox v-model="setting.settingType.enabled"
+                                                             v-validate="'required'">
+                                                    Enabled
+                                                </md-checkbox>
+                                            </div>
 
-                                </div>
-                            </div>
+                                        </div>
+                                    </div>
+                                </md-tab>
+                                <md-tab @click="tab='notification-settings'" id="tab-notification-settings"
+                                        md-label="Notification Settings">
+                                    <div v-for="(smsBody,index) in smsBodiesService.list" :key="index">
+                                        <sms-body :sms-variable-default-values="smsVariableDefaultValueService.list"
+                                                  :sms-body="smsBody"/>
+                                    </div>
+                                </md-tab>
+                            </md-tabs>
+
+
                         </md-card-content>
                         <md-card-actions>
                             <md-button class="md-raised md-primary" @click="updateSmsSetting()">Save</md-button>
@@ -125,20 +141,30 @@
 
 import { SettingService } from '../../services/SettingService'
 import Widget from '../Shared/Widget'
+import { SmsVariableDefaultValueService } from '../../services/SmsVariableDefaultValueService'
+import { SmsBodiesService } from '../../services/SmsBodiesService'
+import SmsBody from './SmsBody'
+import { EventBus } from '../../eventbus'
 
 export default {
     name: 'Setting',
-    components: { Widget },
+    components: { Widget, SmsBody },
     data () {
         return {
             settingService: new SettingService(),
             loadingSync: false,
             loadingSms: false,
-            syncPeriods: ['year','month','hour','week', 'day', 'minute']
+            syncPeriods: ['year', 'month', 'hour', 'week', 'day', 'minute'],
+            smsVariableDefaultValueService: new SmsVariableDefaultValueService(),
+            smsBodiesService: new SmsBodiesService(),
+            tab: 'main-settings'
         }
+    }, created () {
+        this.getSmsVariableDefaultValues()
     },
     mounted () {
         this.getSettings()
+        this.getSmsBodies()
     },
     methods: {
         async getSettings () {
@@ -160,18 +186,45 @@ export default {
         },
         async updateSmsSetting () {
 
-            let validator = await this.$validator.validateAll()
-            if (validator) {
-                try {
-
-                    this.loadingSms = true
-                    await this.settingService.updateSmsSettings()
-                    this.loadingSms = false
-                    this.alertNotify('success', 'Sms settings updated.')
-                } catch (e) {
-                    this.loadingSms = false
-                    this.alertNotify('error', e.message)
+            if (this.tab === 'notification-settings') {
+                EventBus.$emit('checkValidate')
+                if (!this.smsBodiesService.list.filter((x) => !x.validation).length) {
+                    try {
+                        await this.smsBodiesService.updateSmsBodies()
+                        this.alertNotify('success', 'Updated Successfully')
+                    } catch (e) {
+                        this.alertNotify('error', e.message)
+                    }
                 }
+            } else {
+                let validator = await this.$validator.validateAll()
+                if (validator) {
+                    try {
+
+                        this.loadingSms = true
+                        await this.settingService.updateSmsSettings()
+                        this.loadingSms = false
+                        this.alertNotify('success', 'Sms settings updated.')
+                    } catch (e) {
+                        this.loadingSms = false
+                        this.alertNotify('error', e.message)
+                    }
+                }
+            }
+
+        },
+        async getSmsVariableDefaultValues () {
+            try {
+                await this.smsVariableDefaultValueService.getSmsVariableDefaultValues()
+            } catch (e) {
+                this.alertNotify('error', e.message)
+            }
+        },
+        async getSmsBodies () {
+            try {
+                await this.smsBodiesService.getSmsBodies()
+            } catch (e) {
+                this.alertNotify('error', e.message)
             }
         },
         alertNotify (type, message) {
