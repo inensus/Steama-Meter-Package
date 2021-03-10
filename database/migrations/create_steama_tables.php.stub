@@ -202,6 +202,21 @@ class CreateSteamaTables extends Migration
             $table->string('notify_id')->nullable()->unique();
             $table->timestamps();
         });
+        Schema::create('steama_sms_bodies', function (Blueprint $table) {
+            $table->increments('id');
+            $table->string('reference',50)->unique();
+            $table->string('title')->nullable();
+            $table->string('body')->nullable();
+            $table->string('place_holder');
+            $table->string('variables');
+            $table->timestamps();
+        });
+        Schema::create('steama_sms_variable_default_values', function (Blueprint $table) {
+            $table->id();
+            $table->string('variable');
+            $table->string('value');
+            $table->timestamps();
+        });
     }
     public function down()
     {
@@ -229,6 +244,8 @@ class CreateSteamaTables extends Migration
         Schema::dropIfExists('steama_settings');
         Schema::dropIfExists('steama_sms_settings');
         Schema::dropIfExists('steama_sync_settings');
+        Schema::dropIfExists('steama_sms_bodies');
+        Schema::dropIfExists('steama_sms_variable_default_values');
 
 
     }
