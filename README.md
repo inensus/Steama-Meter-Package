@@ -11,7 +11,6 @@ When all records been updated, the plugin will start to synchronize the elder tr
 
 This plugin use Micropowermanager's  Sms-Gateway application for notifying customers.
 When their account balances reduce under their low balance warning limit and when customers make new payments, notifies through sms.
-Sms bodies are determined on SmsBodyGenerator class in Helpers folder. They can be changed from this class. 
 
 ## Installation
 Install the package via `composer require inensus/steama-meter`
