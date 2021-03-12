@@ -1,6 +1,6 @@
 <?php
 
-namespace Inensus\SteamaMeter\Test;
+namespace Inensus\SteamaMeter\Test\Unit;
 
 use App\Jobs\SmsProcessor;
 use App\Models\Address\Address;
