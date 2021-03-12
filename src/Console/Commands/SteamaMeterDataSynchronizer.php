@@ -79,9 +79,9 @@ class SteamaMeterDataSynchronizer extends Command
                         return true;
                     }
                     $data = [
-                        'message' => $syncSetting->action_name .
+                        'message' =>'~ Steamaco-Meter Package ~ ' .$syncSetting->action_name .
                             ' synchronization has failed by unrealizable reason that occurred
-                             on source API. It is going to be retried at ' .
+                             on Steamaco Meter API. ' .$syncSetting->action_name .' synchronization is going to be retried at ' .
                             $nextSync,
                         'phone' => $adminAddress->phone
                     ];
