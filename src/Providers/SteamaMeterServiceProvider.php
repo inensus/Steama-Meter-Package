@@ -71,25 +71,7 @@ class SteamaMeterServiceProvider extends ServiceProvider
         $this->mergeConfigFrom(__DIR__ . '/../../config/steama-meter.php', 'steama');
         $this->app->register(EventServiceProvider::class);
         $this->app->register(ObserverServiceProvider::class);
-
-        $this->app->bind('SteamaMeterApi', function () {
-            $client = new Client();
-            $transaction = new Transaction();
-            $meterParameter = new MeterParameter();
-            $steamaCustomer = new SteamaCustomer();
-            $steamaCredentialService = new SteamaCredentialService();
-            $steamaCustomerService = new SteamaCustomerService();
-            $steamaTransaction = new SteamaTransaction();
-            return new SteamaMeterApi(
-                $client,
-                $meterParameter,
-                $steamaCustomer,
-                $steamaCredentialService,
-                $steamaCustomerService,
-                $steamaTransaction,
-                $transaction
-            );
-        });
+        $this->app->bind('SteamaMeterApi',SteamaMeterApi::class);
     }
 
     public function publishConfigFiles()

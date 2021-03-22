@@ -68,7 +68,7 @@ class SteamaSiteService implements ISynchronizeService
         try {
             $syncCheck = $this->syncCheck(true);
             $syncCheck['data']->filter(function ($value) {
-                return $value['syncStatus'] === 3;
+                return $value['syncStatus'] === SyncStatus::NOT_REGISTERED_YET;
             })->each(function ($site) {
                 $miniGrid = $this->creteRelatedMiniGrid($site);
                 $this->site->newQuery()->create([
@@ -80,7 +80,7 @@ class SteamaSiteService implements ISynchronizeService
             });
 
             $syncCheck['data']->filter(function ($value) {
-                return $value['syncStatus'] === 2;
+                return $value['syncStatus'] === SyncStatus::MODIFIED;
             })->each(function ($site) {
                 $miniGrid = is_null($site['relatedMiniGrid'])  ?
                     $this->creteRelatedMiniGrid($site) : $this->updateRelatedMiniGrid($site, $site['relatedMiniGrid']);

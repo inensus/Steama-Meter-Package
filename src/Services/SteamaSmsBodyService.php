@@ -15,7 +15,7 @@ class SteamaSmsBodyService
 
     public function getSmsBodyByReference($reference)
     {
-        return $this->smsBody->newQuery()->where('reference', $reference)->first();
+        return $this->smsBody->newQuery()->where('reference', $reference)->firstOrFail();
     }
 
     public function getSmsBodies()

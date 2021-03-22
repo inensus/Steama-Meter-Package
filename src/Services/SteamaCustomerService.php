@@ -110,7 +110,7 @@ class SteamaCustomerService implements ISynchronizeService
             $syncCheck = $this->syncCheck(true);
             $userTypes = $this->userType->newQuery()->get();
             $syncCheck['data']->filter(function ($value) {
-                return $value['syncStatus'] === 3;
+                return $value['syncStatus'] === SyncStatus::NOT_REGISTERED_YET;
             })->each(function ($customer) use ($userTypes) {
                 $person = $this->createRelatedPerson($customer);
                 $userType = $userTypes->where('syntax', $customer['user_type'])->first();
@@ -128,7 +128,7 @@ class SteamaCustomerService implements ISynchronizeService
             });
 
             $syncCheck['data']->filter(function ($value) {
-                return $value['syncStatus'] === 2;
+                return $value['syncStatus'] === SyncStatus::MODIFIED;
             })->each(function ($customer) use ($userTypes) {
                 $person = is_null($customer['relatedPerson']) ?
                     $this->createRelatedPerson($customer) : $this->updateRelatedPerson(

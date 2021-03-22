@@ -4,14 +4,15 @@ namespace Inensus\SteamaMeter\Console\Commands;
 
 use App\Jobs\SmsProcessor;
 use App\Models\Sms;
+use App\Sms\Senders\SmsConfigs;
 use App\Sms\SmsTypes;
 use Carbon\Carbon;
 use Illuminate\Console\Command;
-use Inensus\SteamaMeter\Jobs\SteamaSmsProcessor;
 use Inensus\SteamaMeter\Services\SteamaCustomerService;
 use Inensus\SteamaMeter\Services\SteamaSmsNotifiedCustomerService;
 use Inensus\SteamaMeter\Services\SteamaSmsSettingService;
 use Inensus\SteamaMeter\Services\SteamaTransactionsService;
+use Inensus\SteamaMeter\Sms\Senders\SteamaSmsConfig;
 use Inensus\SteamaMeter\Sms\SteamaSmsTypes;
 use Inensus\StemaMeter\Exceptions\CronJobException;
 
@@ -99,9 +100,9 @@ class SteamaSmsNotifier extends Command
                 }
                 SmsProcessor::dispatch(
                     $steamaTransaction->thirdPartyTransaction->transaction,
-                    SmsTypes::TRANSACTION_CONFIRMATION
+                    SmsTypes::TRANSACTION_CONFIRMATION,
+                    SmsConfigs::class
                 )->allOnConnection('redis')->onQueue(\config('services.queues.sms'));
-
                 $this->steamaSmsNotifiedCustomerService->createTransactionSmsNotify(
                     $notifyCustomer->customer_id,
                     $steamaTransaction->id
@@ -132,11 +133,11 @@ class SteamaSmsNotifier extends Command
             ) {
                 return true;
             }
-            SteamaSmsProcessor::dispatch(
+            SmsProcessor::dispatch(
                 $customer,
-                SteamaSmsTypes::LOW_BALANCE_LIMIT_NOTIFIER
+                SteamaSmsTypes::LOW_BALANCE_LIMIT_NOTIFIER,
+                SteamaSmsConfig::class
             )->allOnConnection('redis')->onQueue(\config('services.queues.sms'));
-
             $this->steamaSmsNotifiedCustomerService->createLowBalanceSmsNotify($customer->customer_id);
             return true;
         });

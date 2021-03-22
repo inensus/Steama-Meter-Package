@@ -96,7 +96,7 @@ class SteamaMeterService implements ISynchronizeService
         try {
             $syncCheck = $this->syncCheck(true);
             $syncCheck['data']->filter(function ($value) {
-                return $value['syncStatus'] === 3;
+                return $value['syncStatus'] === SyncStatus::NOT_REGISTERED_YET;
             })->each(function ($meter) {
                 $createdMeter = $this->createRelatedMeter($meter);
                 $this->stmMeter->newQuery()->create([
@@ -108,7 +108,7 @@ class SteamaMeterService implements ISynchronizeService
                 ]);
             });
             $syncCheck['data']->filter(function ($value) {
-                return $value['syncStatus'] === 2;
+                return $value['syncStatus'] === SyncStatus::MODIFIED;
             })->each(function ($meter) {
                 $relatedMeter = is_null($meter['relatedMeter']) ?
                     $this->createRelatedMeter($meter) : $this->updateRelatedMeter($meter, $meter['relatedMeter']);
