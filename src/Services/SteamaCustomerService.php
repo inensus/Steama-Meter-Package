@@ -110,7 +110,7 @@ class SteamaCustomerService implements ISynchronizeService
             $syncCheck = $this->syncCheck(true);
             $userTypes = $this->userType->newQuery()->get();
             $syncCheck['data']->filter(function ($value) {
-                return $value['syncStatus'] === 3;
+                return $value['syncStatus'] === SyncStatus::NOT_REGISTERED_YET;
             })->each(function ($customer) use ($userTypes) {
                 $person = $this->createRelatedPerson($customer);
                 $userType = $userTypes->where('syntax', $customer['user_type'])->first();
@@ -128,7 +128,7 @@ class SteamaCustomerService implements ISynchronizeService
             });
 
             $syncCheck['data']->filter(function ($value) {
-                return $value['syncStatus'] === 2;
+                return $value['syncStatus'] === SyncStatus::MODIFIED;
             })->each(function ($customer) use ($userTypes) {
                 $person = is_null($customer['relatedPerson']) ?
                     $this->createRelatedPerson($customer) : $this->updateRelatedPerson(
@@ -175,11 +175,11 @@ class SteamaCustomerService implements ISynchronizeService
                     array_push($customers, $customer);
                 }
             }
-        } catch (Exception $e) {
+        } catch (SteamaApiResponseException $e) {
             if ($returnData) {
                 return ['result' => false];
             }
-            throw  new Exception($e->getMessage());
+            throw  new SteamaApiResponseException($e->getMessage());
         }
         $customersCollection = collect($customers);
         $stmCustomers = $this->customer->newQuery()->get();
@@ -201,7 +201,7 @@ class SteamaCustomerService implements ISynchronizeService
 
             return $customer;
         });
-        $customerSyncStatus = $customersCollection->whereNotIn('syncStatus', 1)->count();
+        $customerSyncStatus = $customersCollection->whereNotIn('syncStatus', SyncStatus::MODIFIED)->count();
         if ($customerSyncStatus) {
             return $returnData ? ['data' => $customersCollection, 'result' => false] : ['result' => false];
         }
@@ -537,5 +537,14 @@ class SteamaCustomerService implements ISynchronizeService
             $steamaCustomer['low_balance_warning'],
             $steamaCustomer['account_balance'],
         ]);
+    }
+    public function getSteamaCustomerWithPhone($phoneNumber)
+    {
+        $person = $this->person::with(['addresses'])
+            ->whereHas('addresses', static function ($q) use ($phoneNumber) {
+                $q->where('phone', $phoneNumber);
+            }
+            )->first();
+        return $this->customer->newQuery()->with(['site','mpmPerson.meters.meter'])->where('mpm_customer_id',$person->id)->first();
     }
 }

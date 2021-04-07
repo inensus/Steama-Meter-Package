@@ -3,9 +3,11 @@
 namespace Inensus\SteamaMeter\Http\Requests;
 
 use GuzzleHttp\Client;
+use GuzzleHttp\Exception\GuzzleException;
 use Inensus\SteamaMeter\Helpers\ApiHelpers;
 use Inensus\SteamaMeter\Models\SteamaCredential;
 use Inensus\StemaMeter\Exceptions\ModelNotFoundException;
+use Inensus\StemaMeter\Exceptions\SteamaApiResponseException;
 
 class SteamaMeterApiRequests
 {
@@ -28,39 +30,48 @@ class SteamaMeterApiRequests
     {
         try {
             $credential = $this->getCredentials();
-        } catch (ModelNotFoundException $e) {
+        } catch (\Exception $e) {
             throw new ModelNotFoundException($e->getMessage());
         }
-        $request = $this->client->get(
-            $credential->api_url . $url,
-            [
-                'headers' => [
-                    'Content-Type' => 'application/json;charset=utf-8',
-                    'Authorization' => 'Token ' . $credential->authentication_token
-                ],
-            ]
-        );
+        try {
+            $request = $this->client->get(
+                $credential->api_url . $url,
+                [
+                    'headers' => [
+                        'Content-Type' => 'application/json;charset=utf-8',
+                        'Authorization' => 'Token ' . $credential->authentication_token
+                    ],
+                ]
+            );
+        } catch (GuzzleException $exception) {
+            throw new SteamaApiResponseException($exception->getMessage());
+        }
         return $this->apiHelpers->checkApiResult(json_decode((string)$request->getBody(), true));
     }
+
     public function token($url, $postParams)
     {
         try {
             $credential = $this->getCredentials();
-        } catch (ModelNotFoundException $e) {
+        } catch (\Exception $e) {
             throw new ModelNotFoundException($e->getMessage());
         }
-
-        $request = $this->client->post(
-            $credential->api_url . $url,
-            [
-                'body' => json_encode($postParams),
-                'headers' => [
-                    'Content-Type' => 'application/json;charset=utf-8',
-                ],
-            ]
-        );
+        try {
+            $request = $this->client->post(
+                $credential->api_url . $url,
+                [
+                    'body' => json_encode($postParams),
+                    'headers' => [
+                        'Content-Type' => 'application/json;charset=utf-8',
+                    ],
+                ]
+            );
+        } catch (GuzzleException $exception) {
+            throw new SteamaApiResponseException($exception->getMessage());
+        }
         return $this->apiHelpers->checkApiResult(json_decode((string)$request->getBody(), true));
     }
+
     public function post($url, $postParams)
     {
         try {
@@ -68,16 +79,20 @@ class SteamaMeterApiRequests
         } catch (ModelNotFoundException $e) {
             throw new ModelNotFoundException($e->getMessage());
         }
-        $request = $this->client->post(
-            $credential->api_url . $url,
-            [
-                'body' => json_encode($postParams),
-                'headers' => [
-                    'Content-Type' => 'application/json;charset=utf-8',
-                    'Authorization' => 'Token ' . $credential->authentication_token
-                ],
-            ]
-        );
+        try {
+            $request = $this->client->post(
+                $credential->api_url . $url,
+                [
+                    'body' => json_encode($postParams),
+                    'headers' => [
+                        'Content-Type' => 'application/json;charset=utf-8',
+                        'Authorization' => 'Token ' . $credential->authentication_token
+                    ],
+                ]
+            );
+        } catch (GuzzleException $exception) {
+            throw new SteamaApiResponseException($exception->getMessage());
+        }
         return $this->apiHelpers->checkApiResult(json_decode((string)$request->getBody(), true));
     }
 
@@ -85,19 +100,24 @@ class SteamaMeterApiRequests
     {
         try {
             $credential = $this->getCredentials();
-        } catch (ModelNotFoundException $e) {
+        } catch (\Exception $e) {
             throw new ModelNotFoundException($e->getMessage());
         }
-        $request = $this->client->put(
-            $credential->api_url . $url,
-            [
-                'body' => json_encode($putParams),
-                'headers' => [
-                    'Content-Type' => 'application/json;charset=utf-8',
-                    'Authorization' => 'Token ' . $credential->authentication_token
-                ],
-            ]
-        );
+
+        try {
+            $request = $this->client->put(
+                $credential->api_url . $url,
+                [
+                    'body' => json_encode($putParams),
+                    'headers' => [
+                        'Content-Type' => 'application/json;charset=utf-8',
+                        'Authorization' => 'Token ' . $credential->authentication_token
+                    ],
+                ]
+            );
+        } catch (GuzzleException $exception) {
+            throw new SteamaApiResponseException($exception->getMessage());
+        }
         return $this->apiHelpers->checkApiResult(json_decode((string)$request->getBody(), true));
     }
 
@@ -105,19 +125,23 @@ class SteamaMeterApiRequests
     {
         try {
             $credential = $this->getCredentials();
-        } catch (ModelNotFoundException $e) {
+        } catch (\Exception $e) {
             throw new ModelNotFoundException($e->getMessage());
         }
-        $request = $this->client->patch(
-            $credential->api_url . $url,
-            [
-                'body' => json_encode($putParams),
-                'headers' => [
-                    'Content-Type' => 'application/json;charset=utf-8',
-                    'Authorization' => 'Token ' . $credential->authentication_token
-                ],
-            ]
-        );
+        try {
+            $request = $this->client->patch(
+                $credential->api_url . $url,
+                [
+                    'body' => json_encode($putParams),
+                    'headers' => [
+                        'Content-Type' => 'application/json;charset=utf-8',
+                        'Authorization' => 'Token ' . $credential->authentication_token
+                    ],
+                ]
+            );
+        } catch (GuzzleException $exception) {
+            throw new SteamaApiResponseException($exception->getMessage());
+        }
         return $this->apiHelpers->checkApiResult(json_decode((string)$request->getBody(), true));
     }
 
@@ -125,7 +149,7 @@ class SteamaMeterApiRequests
     {
         try {
             $credential = $this->getCredentials();
-        } catch (ModelNotFoundException $e) {
+        } catch (\Exception $e) {
             throw new ModelNotFoundException($e->getMessage());
         }
         $apiUrl = $credential->api_url . $url . '?';
@@ -134,15 +158,19 @@ class SteamaMeterApiRequests
         }
         $apiUrl = substr($apiUrl, 0, -1);
 
-        $request = $this->client->get(
-            $apiUrl,
-            [
-                'headers' => [
-                    'Content-Type' => 'application/json;charset=utf-8',
-                    'Authorization' => 'Token ' . $credential->authentication_token
-                ],
-            ]
-        );
+        try {
+            $request = $this->client->get(
+                $apiUrl,
+                [
+                    'headers' => [
+                        'Content-Type' => 'application/json;charset=utf-8',
+                        'Authorization' => 'Token ' . $credential->authentication_token
+                    ],
+                ]
+            );
+        } catch (GuzzleException $exception) {
+            throw new SteamaApiResponseException($exception->getMessage());
+        }
         return json_decode((string)$request->getBody(), true);
     }
 

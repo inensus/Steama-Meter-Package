@@ -15,13 +15,13 @@ use App\Models\SmsBody;
 use App\Models\Transaction\ThirdPartyTransaction;
 use App\Models\Transaction\Transaction;
 use App\Models\User;
+use App\Sms\Senders\SmsConfigs;
 use App\Sms\SmsTypes;
 use Carbon\Carbon;
 use Carbon\CarbonInterval;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Queue;
-use Inensus\SteamaMeter\Jobs\SteamaSmsProcessor;
 use Inensus\SteamaMeter\Models\SteamaCustomer;
 use Inensus\SteamaMeter\Models\SteamaMeter;
 use Inensus\SteamaMeter\Models\SteamaSetting;
@@ -31,6 +31,7 @@ use Inensus\SteamaMeter\Models\SteamaSmsSetting;
 use Inensus\SteamaMeter\Models\SteamaSyncAction;
 use Inensus\SteamaMeter\Models\SteamaSyncSetting;
 use Inensus\SteamaMeter\Models\SteamaTransaction;
+use Inensus\SteamaMeter\Sms\Senders\SteamaSmsConfig;
 use Inensus\SteamaMeter\Sms\SteamaSmsTypes;
 use Tests\TestCase;
 
@@ -42,7 +43,6 @@ class SmsNotifyTest extends TestCase
     public function is_low_balance_notify_send()
     {
         Queue::fake();
-        config::set('app.debug', false);
         $this->initializeData();
         $lowBalanceMin = SteamaSmsSetting::query()->where(
             'state',
@@ -82,9 +82,10 @@ class SmsNotifyTest extends TestCase
                 return true;
             }
 
-            SteamaSmsProcessor::dispatchNow(
+            SmsProcessor::dispatch(
                 $customer,
-                SteamaSmsTypes::LOW_BALANCE_LIMIT_NOTIFIER
+                SteamaSmsTypes::LOW_BALANCE_LIMIT_NOTIFIER,
+                SteamaSmsConfig::class
             );
 
             SteamaSmsNotifiedCustomer::query()->create([
@@ -93,15 +94,13 @@ class SmsNotifyTest extends TestCase
             ]);
             return true;
         });
-        $this->assertEquals(SteamaSmsNotifiedCustomer::query()->get()->count(), 1);
-        $this->assertEquals(Sms::query()->get()->count(), 1);
+        Queue::assertPushed(SmsProcessor::class);
     }
 
     /** @test */
     public function is_transaction_notify_send()
     {
         Queue::fake();
-        config::set('app.debug', false);
         $data = $this->initializeData();
         $this->initializeSteamaTransaction($data['customer'], $data['meter']);
         $transactionMin = SteamaSmsSetting::query()->where(
@@ -143,9 +142,10 @@ class SmsNotifyTest extends TestCase
             ) {
                 return true;
             }
-            SmsProcessor::dispatchNow(
+            SmsProcessor::dispatch(
                 $steamaTransaction->thirdPartyTransaction->transaction,
-                SmsTypes::TRANSACTION_CONFIRMATION
+                SmsTypes::TRANSACTION_CONFIRMATION,
+                SmsConfigs::class
             );
             SteamaSmsNotifiedCustomer::query()->create([
                 'customer_id' => $notifyCustomer->customer_id,
@@ -154,15 +154,13 @@ class SmsNotifyTest extends TestCase
             ]);
             return true;
         });
-        $this->assertEquals(SteamaSmsNotifiedCustomer::query()->get()->count(), 1);
-        $this->assertEquals(Sms::query()->get()->count(), 1);
+        Queue::assertPushed(SmsProcessor::class);
     }
 
     /** @test */
     public function is_max_attempt_notify_send()
     {
         Queue::fake();
-        config::set('app.debug', false);
         $this->addSyncSettings();
         $this->initializeAdminData();
         $syncActions = SteamaSyncAction::query()->where('next_sync', '<=', Carbon::now())
@@ -192,9 +190,10 @@ class SmsNotifyTest extends TestCase
                          It is going to be retried at ' . $nextSync,
                     'phone' => $adminAddress->phone
                 ];
-                SmsProcessor::dispatchNow(
+                SmsProcessor::dispatch(
                     $data,
-                    SmsTypes::MANUAL_SMS
+                    SmsTypes::MANUAL_SMS,
+                    SmsConfigs::class
                 );
             }
             return true;

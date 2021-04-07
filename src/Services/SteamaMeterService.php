@@ -21,6 +21,7 @@ use Exception;
 use Inensus\SteamaMeter\Models\SteamaMeterType;
 use Inensus\SteamaMeter\Models\SteamaTariff;
 use Inensus\SteamaMeter\Models\SyncStatus;
+use Inensus\StemaMeter\Exceptions\SteamaApiResponseException;
 
 class SteamaMeterService implements ISynchronizeService
 {
@@ -96,7 +97,7 @@ class SteamaMeterService implements ISynchronizeService
         try {
             $syncCheck = $this->syncCheck(true);
             $syncCheck['data']->filter(function ($value) {
-                return $value['syncStatus'] === 3;
+                return $value['syncStatus'] === SyncStatus::NOT_REGISTERED_YET;
             })->each(function ($meter) {
                 $createdMeter = $this->createRelatedMeter($meter);
                 $this->stmMeter->newQuery()->create([
@@ -108,7 +109,7 @@ class SteamaMeterService implements ISynchronizeService
                 ]);
             });
             $syncCheck['data']->filter(function ($value) {
-                return $value['syncStatus'] === 2;
+                return $value['syncStatus'] === SyncStatus::MODIFIED;
             })->each(function ($meter) {
                 $relatedMeter = is_null($meter['relatedMeter']) ?
                     $this->createRelatedMeter($meter) : $this->updateRelatedMeter($meter, $meter['relatedMeter']);
@@ -146,11 +147,11 @@ class SteamaMeterService implements ISynchronizeService
                     array_push($meters, $meter);
                 }
             }
-        } catch (Exception $e) {
+        } catch (SteamaApiResponseException $e) {
             if ($returnData) {
                 return ['result' => false];
             }
-            throw  new Exception($e->getMessage());
+            throw  new SteamaApiResponseException($e->getMessage());
         }
         $metersCollection = collect($meters)->filter(function ($meter) {
             return $meter['customer'] !== null;
@@ -173,7 +174,7 @@ class SteamaMeterService implements ISynchronizeService
             $meter['registeredStmMeter'] = $registeredStmMeter;
             return $meter;
         });
-        $meterSyncStatus = $metersCollection->whereNotIn('syncStatus', 1)->count();
+        $meterSyncStatus = $metersCollection->whereNotIn('syncStatus', SyncStatus::SYNCED)->count();
         if ($meterSyncStatus) {
             return $returnData ? ['data' => $metersCollection, 'result' => false] : ['result' => false];
         }

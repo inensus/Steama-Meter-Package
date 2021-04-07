@@ -6,17 +6,19 @@
             </md-card-header>
             <md-card-content class="md-layout md-gutter md-size-100">
                 <div class="md-layout-item md-size-70">
-                    <md-field :class="{'md-invalid': errors.has('body')}">
-                        <md-textarea :placeholder="smsBody.placeholder"
-                                     v-model="smsBody.body"
-                                     id="body"
-                                     name="body"
-                                     md-autogrow @keydown.native="getLastBody()"
-                                     @keyup.native="checkBody($event)"
-                                     v-validate="'required'"
-                        ></md-textarea>
-                        <span class="md-error">{{ errors.first('body')}}</span>
-                    </md-field>
+                    <form :data-vv-scope="tabName">
+                        <md-field :class="{'md-invalid': errors.has(tabName+'.body')}">
+                            <md-textarea :placeholder="smsBody.placeholder"
+                                         v-model="smsBody.body"
+                                         id="body"
+                                         name="body"
+                                         md-autogrow @keydown.native="getLastBody()"
+                                         @keyup.native="checkBody($event)"
+                                         v-validate="'required'"
+                            ></md-textarea>
+                            <span class="md-error">{{ errors.first(tabName+'.body')}}</span>
+                        </md-field>
+                    </form>
                 </div>
                 <div class="md-layout-item md-size-30">
                     <div v-if="smsBody.variables[0]!==''">
@@ -40,7 +42,6 @@
 
 <script>
 
-import { EventBus } from '../../eventbus'
 import { SmsVariableDefaultValueService } from '../../services/SmsVariableDefaultValueService'
 
 export default {
@@ -52,7 +53,12 @@ export default {
         smsVariableDefaultValues: {
             type: Array,
             default: () => ([])
+        },
+        tabName: {
+            type: String,
+            default: ''
         }
+
     },
     data () {
         return {
@@ -62,14 +68,14 @@ export default {
             smsVariableDefaultValueService: new SmsVariableDefaultValueService(),
         }
     },
+
     mounted () {
         this.constantVariables = this.smsBody.variables.map((e) => {
             return e.replace(/[^a-zA-Z0-9]/g, '')
         })
-        EventBus.$on('checkValidate', async () => {
-            this.smsBody.validation = await this.$validator.validateAll()
-        })
-        this.prepareShownMessage()
+        setTimeout(() => {
+            this.prepareShownMessage()
+        }, 100)
     },
     methods: {
         selectVariable (tag) {
@@ -108,6 +114,9 @@ export default {
         },
         prepareShownMessage () {
             this.smsVariableDefaultValueService.prepareShownMessage(this.smsBody.body, this.smsVariableDefaultValues)
+        },
+        async validateBody () {
+            this.smsBody.validation = await this.$validator.validateAll(this.tabName)
         },
         alertNotify (type, message) {
             this.$notify({

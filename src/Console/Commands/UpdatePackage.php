@@ -1,6 +1,8 @@
 <?php
 
+
 namespace Inensus\SteamaMeter\Console\Commands;
+
 
 use Illuminate\Console\Command;
 use Inensus\SteamaMeter\Helpers\ApiHelpers;
@@ -18,9 +20,9 @@ use Inensus\SteamaMeter\Services\SteamaSyncSettingService;
 use Inensus\SteamaMeter\Services\SteamaTariffService;
 use Inensus\SteamaMeter\Services\SteamaUserTypeService;
 
-class InstallPackage extends Command
+class UpdatePackage extends Command
 {
-    protected $signature = 'steama-meter:install';
+    protected $signature = 'steama-meter:update';
     protected $description = 'Install Steamaco Meter Package';
 
     private $menuItemService;
@@ -37,7 +39,6 @@ class InstallPackage extends Command
     private $defaultValueService;
     private $steamaSmsFeedbackWordService;
     private $packageInstallationService;
-
 
     public function __construct(
         MenuItemService $menuItemService,
@@ -74,9 +75,15 @@ class InstallPackage extends Command
 
     public function handle(): void
     {
-        $this->info('Installing Steamaco Meter Integration Package\n');
+        $this->info('Steamaco Meter Integration Updating Started\n');
+        $this->info('Removing former version of package\n');
+        echo shell_exec('COMPOSER_MEMORY_LIMIT=-1 ../composer.phar  remove inensus/steama-meter');
+        $this->info('Installing last version of package\n');
+        echo shell_exec('COMPOSER_MEMORY_LIMIT=-1 ../composer.phar  require inensus/steama-meter');
 
         $this->info('Copying migrations\n');
+
+
         $this->call('vendor:publish', [
             '--provider' => "Inensus\SteamaMeter\Providers\SteamaMeterServiceProvider",
             '--tag' => "migrations"
@@ -92,21 +99,6 @@ class InstallPackage extends Command
             '--force' => true,
         ]);
 
-        $this->apiHelpers->registerSparkMeterManufacturer();
-
-        $this->credentialService->createCredentials();
-        $tariff = $this->tariffService->createTariff();
-        $this->userTypeService->createUserTypes($tariff);
-        $this->paymentPlanService->createPaymentPlans();
-        $this->agentService->createSteamaAgentCommission();
-
-        $this->call('plugin:add', [
-            'name' => "SteamaMeter",
-            'composer_name' => "inensus/steama-meter",
-            'description' => "SteamaMeter integration package for MicroPowerManager",
-        ]);
-
-
         $this->call('routes:generate');
 
         $menuItems = $this->menuItemService->createMenuItems();
@@ -117,13 +109,7 @@ class InstallPackage extends Command
             ]);
         }
         $this->call('sidebar:generate');
+        $this->info('Package updated successfully..');
 
-        $this->info('Package installed successfully..');
-
-        if (!$this->siteService->checkLocationAvailability()) {
-            $this->warn('------------------------------');
-            $this->warn("Steamaco Meter package needs least one registered Cluster.");
-            $this->warn("If you have no Cluster, please navigate to #Locations# section and register your locations.");
-        }
     }
 }

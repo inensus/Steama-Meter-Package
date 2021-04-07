@@ -157,7 +157,7 @@ class SteamaSyncSettingService
     {
         try {
             return $this->syncSetting->newQuery()->where('action_name', $actionName)->firstOrFail();
-        } catch (ModelNotFoundException $exception) {
+        } catch (\Exception $exception) {
             throw  new ModelNotFoundException($exception->getMessage());
         }
     }

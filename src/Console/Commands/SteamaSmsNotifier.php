@@ -4,14 +4,16 @@ namespace Inensus\SteamaMeter\Console\Commands;
 
 use App\Jobs\SmsProcessor;
 use App\Models\Sms;
+use App\Services\SmsService;
+use App\Sms\Senders\SmsConfigs;
 use App\Sms\SmsTypes;
 use Carbon\Carbon;
 use Illuminate\Console\Command;
-use Inensus\SteamaMeter\Jobs\SteamaSmsProcessor;
 use Inensus\SteamaMeter\Services\SteamaCustomerService;
 use Inensus\SteamaMeter\Services\SteamaSmsNotifiedCustomerService;
 use Inensus\SteamaMeter\Services\SteamaSmsSettingService;
 use Inensus\SteamaMeter\Services\SteamaTransactionsService;
+use Inensus\SteamaMeter\Sms\Senders\SteamaSmsConfig;
 use Inensus\SteamaMeter\Sms\SteamaSmsTypes;
 use Inensus\StemaMeter\Exceptions\CronJobException;
 
@@ -25,13 +27,15 @@ class SteamaSmsNotifier extends Command
     private $steamaTransactionService;
     private $steamaSmsNotifiedCustomerService;
     private $steamaCustomerService;
+    private $smsService;
 
     public function __construct(
         SteamaSmsSettingService $smsSettingService,
         Sms $sms,
         SteamaTransactionsService $steamaTransactionsService,
         SteamaSmsNotifiedCustomerService $steamaSmsNotifiedCustomerService,
-        SteamaCustomerService $steamaCustomerService
+        SteamaCustomerService $steamaCustomerService,
+        SmsService $smsService
     ) {
         parent::__construct();
         $this->smsSettingsService = $smsSettingService;
@@ -39,6 +43,7 @@ class SteamaSmsNotifier extends Command
         $this->steamaTransactionService = $steamaTransactionsService;
         $this->steamaSmsNotifiedCustomerService = $steamaSmsNotifiedCustomerService;
         $this->steamaCustomerService = $steamaCustomerService;
+        $this->smsService = $smsService;
     }
 
     public function handle()
@@ -97,10 +102,9 @@ class SteamaSmsNotifier extends Command
                 ) {
                     return true;
                 }
-                SmsProcessor::dispatch(
-                    $steamaTransaction->thirdPartyTransaction->transaction,
-                    SmsTypes::TRANSACTION_CONFIRMATION
-                )->allOnConnection('redis')->onQueue(\config('services.queues.sms'));
+                $this->smsService->sendSms($steamaTransaction->thirdPartyTransaction->transaction,
+                    SmsTypes::TRANSACTION_CONFIRMATION,
+                    SmsConfigs::class);
 
                 $this->steamaSmsNotifiedCustomerService->createTransactionSmsNotify(
                     $notifyCustomer->customer_id,
@@ -132,10 +136,9 @@ class SteamaSmsNotifier extends Command
             ) {
                 return true;
             }
-            SteamaSmsProcessor::dispatch(
-                $customer,
-                SteamaSmsTypes::LOW_BALANCE_LIMIT_NOTIFIER
-            )->allOnConnection('redis')->onQueue(\config('services.queues.sms'));
+            $this->smsService->sendSms($customer,
+                SteamaSmsTypes::LOW_BALANCE_LIMIT_NOTIFIER,
+                SteamaSmsConfig::class);
 
             $this->steamaSmsNotifiedCustomerService->createLowBalanceSmsNotify($customer->customer_id);
             return true;

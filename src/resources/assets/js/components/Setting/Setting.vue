@@ -12,54 +12,61 @@
                             Synchronization Settings
                         </md-card-header>
                         <md-card-content>
-                            <div v-for="(setting,i) in settingService.list" :key="i">
-                                <div v-if="setting.settingTypeName ==='sync_setting'" class="md-layout md-gutter">
-                                    <div class="md-layout-item  md-xlarge-size-25 md-large-size-25 md-medium-size-25 md-small-size-25">
-                                        <md-field>
-                                            <label>{{setting.settingType.actionName}}</label>
+                            <form data-vv-scope="Synchronization-Form">
 
-                                        </md-field>
-                                    </div>
-                                    <div class="md-layout-item  md-xlarge-size-25 md-large-size-25 md-medium-size-25 md-small-size-25">
-                                        <md-field :class="{'md-invalid': errors.has('each_'+setting.id)}">
-                                            <label for="per">Each</label>
-                                            <md-input
-                                                    :id="'each_'+setting.id"
-                                                    :name="'each_'+setting.id"
-                                                    v-model="setting.settingType.syncInValueNum"
-                                                    type="number"
-                                                    v-validate="'required|min_value:1'"
-                                            />
-                                            <span class="md-error">{{ errors.first('each_'+setting.i) }}</span>
-                                        </md-field>
-                                    </div>
-                                    <div class="md-layout-item  md-xlarge-size-25 md-large-size-25 md-medium-size-25 md-small-size-25">
-                                        <md-field>
-                                            <label for="period">{{ $tc('words.period') }}</label>
-                                            <md-select name="period" v-model="setting.settingType.syncInValueStr"
-                                                       id="period" v-validate="'required'">
-                                                <md-option v-for="(p,i) in syncPeriods" :value="p" :key="i">{{p}}(s)
-                                                </md-option>
+                                <div v-for="(setting,i) in settingService.list" :key="i">
+                                    <div v-if="setting.settingTypeName ==='steama_sync_setting'"
+                                         class="md-layout md-gutter">
+                                        <div class="md-layout-item  md-xlarge-size-25 md-large-size-25 md-medium-size-25 md-small-size-25">
+                                            <md-field>
+                                                <label>{{setting.settingType.actionName}}</label>
 
-                                            </md-select>
-                                        </md-field>
-                                    </div>
-                                    <div class="md-layout-item  md-xlarge-size-25 md-large-size-25 md-medium-size-25 md-small-size-25">
-                                        <md-field :class="{'md-invalid': errors.has('max_attempt_'+setting.id)}">
-                                            <label for="max_attempt">Maximum Attempt(s)</label>
-                                            <md-input
-                                                    :id="'max_attempt_'+setting.id"
-                                                    :name="'max_attempt_'+setting.id"
-                                                    v-model="setting.settingType.maxAttempts"
-                                                    type="number"
-                                                    min="1"
-                                                    v-validate="'required|min_value:1'"
-                                            />
-                                            <span class="md-error">{{ errors.first('max_attempt_'+setting.id) }}</span>
-                                        </md-field>
+                                            </md-field>
+                                        </div>
+                                        <div class="md-layout-item  md-xlarge-size-25 md-large-size-25 md-medium-size-25 md-small-size-25">
+                                            <md-field
+                                                    :class="{'md-invalid': errors.has('Synchronization-Form.each_'+setting.id)}">
+                                                <label for="per">Each</label>
+                                                <md-input
+                                                        min="1"
+                                                        :id="'each_'+setting.id"
+                                                        :name="'each_'+setting.id"
+                                                        v-model="setting.settingType.syncInValueNum"
+                                                        type="number"
+                                                        v-validate="'required|min_value:1'"
+                                                />
+                                                <span class="md-error">{{ errors.first('Synchronization-Form.each_'+setting.id) }}</span>
+                                            </md-field>
+                                        </div>
+                                        <div class="md-layout-item  md-xlarge-size-25 md-large-size-25 md-medium-size-25 md-small-size-25">
+                                            <md-field>
+                                                <label for="period">{{ $tc('words.period') }}</label>
+                                                <md-select name="period" v-model="setting.settingType.syncInValueStr"
+                                                           id="period" v-validate="'required'">
+                                                    <md-option v-for="(p,i) in syncPeriods" :value="p" :key="i">{{p}}(s)
+                                                    </md-option>
+
+                                                </md-select>
+                                            </md-field>
+                                        </div>
+                                        <div class="md-layout-item  md-xlarge-size-25 md-large-size-25 md-medium-size-25 md-small-size-25">
+                                            <md-field
+                                                    :class="{'md-invalid': errors.has('Synchronization-Form.max_attempt_'+setting.id)}">
+                                                <label for="max_attempt">Maximum Attempt(s)</label>
+                                                <md-input
+                                                        :id="'max_attempt_'+setting.id"
+                                                        :name="'max_attempt_'+setting.id"
+                                                        v-model="setting.settingType.maxAttempts"
+                                                        type="number"
+                                                        min="1"
+                                                        v-validate="'required|min_value:1'"
+                                                />
+                                                <span class="md-error">{{ errors.first('Synchronization-Form.max_attempt_'+setting.id) }}</span>
+                                            </md-field>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
+                            </form>
                         </md-card-content>
                         <md-card-actions>
                             <md-button class="md-raised md-primary" @click="updateSyncSetting()">Save</md-button>
@@ -76,51 +83,87 @@
                         <md-card-content>
                             <md-tabs>
                                 <md-tab @click="tab='main-settings'" id="tab-main-settings" md-label="Main Settings">
-                                    <div v-for="(setting,i) in settingService.list" :key="i">
-                                        <div v-if="setting.settingTypeName ==='sms_setting'"
-                                             class="md-layout md-gutter">
-                                            <div class="md-layout-item  md-xlarge-size-33 md-large-size-33 md-medium-size-33 md-small-size-33">
-                                                <md-field>
-                                                    <label>{{setting.settingType.state}}</label>
+                                    <form data-vv-scope="Main-Form">
+                                        <div v-for="(setting,i) in settingService.list" :key="i">
+                                            <div v-if="setting.settingTypeName ==='steama_sms_setting'"
+                                                 class="md-layout md-gutter">
+                                                <div class="md-layout-item  md-xlarge-size-33 md-large-size-33 md-medium-size-33 md-small-size-33">
+                                                    <md-field>
+                                                        <label>{{setting.settingType.state}}</label>
 
-                                                </md-field>
-                                            </div>
-                                            <div class="md-layout-item  md-xlarge-size-33 md-large-size-33 md-medium-size-33 md-small-size-33">
-                                                <md-field :class="{'md-invalid': errors.has('send_elder_'+setting.id)}">
-                                                    <label for="send_elder">Consider Only (created in last X
-                                                        minutes)</label>
-                                                    <md-input
-                                                            :id="'send_elder_'+setting.id"
-                                                            :name="'send_elder_'+setting.id"
-                                                            v-model="setting.settingType.NotSendElderThanMins"
-                                                            type="number"
-                                                            min="10"
-                                                            v-validate="'required|min_value:10'"
-                                                    />
-                                                    <span class="md-error">{{ errors.first('send_elder_'+setting.id) }}</span>
-                                                </md-field>
-                                            </div>
+                                                    </md-field>
+                                                </div>
+                                                <div class="md-layout-item  md-xlarge-size-33 md-large-size-33 md-medium-size-33 md-small-size-33">
+                                                    <md-field
+                                                            :class="{'md-invalid': errors.has('Main-Form.send_elder_'+setting.id)}">
+                                                        <label for="send_elder">Consider Only (created in last X
+                                                            minutes)</label>
+                                                        <md-input
+                                                                :id="'send_elder_'+setting.id"
+                                                                :name="'send_elder_'+setting.id"
+                                                                v-model="setting.settingType.NotSendElderThanMins"
+                                                                type="number"
+                                                                min="10"
+                                                                v-validate="'required|min_value:10'"
+                                                        />
+                                                        <span class="md-error">{{ errors.first('Main-Form.send_elder_'+setting.id) }}</span>
+                                                    </md-field>
+                                                </div>
 
-                                            <div class="md-layout-item  md-xlarge-size-33 md-large-size-33 md-medium-size-33 md-small-size-33">
-                                                <md-checkbox v-model="setting.settingType.enabled"
-                                                             v-validate="'required'">
-                                                    Enabled
-                                                </md-checkbox>
-                                            </div>
+                                                <div class="md-layout-item  md-xlarge-size-33 md-large-size-33 md-medium-size-33 md-small-size-33">
+                                                    <md-checkbox v-model="setting.settingType.enabled"
+                                                                 v-validate="'required'">
+                                                        Enabled
+                                                    </md-checkbox>
+                                                </div>
 
+                                            </div>
                                         </div>
-                                    </div>
+                                    </form>
                                 </md-tab>
                                 <md-tab @click="tab='notification-settings'" id="tab-notification-settings"
                                         md-label="Notification Settings">
-                                    <div v-for="(smsBody,index) in smsBodiesService.list" :key="index">
-                                        <sms-body :sms-variable-default-values="smsVariableDefaultValueService.list"
+                                    <div v-for="(smsBody,index) in smsBodiesService.lowBalanceNotifierList"
+                                         :key="index">
+                                        <sms-body ref="smsBody_notification_ref" tab-name="notification-settings"
+                                                  :sms-variable-default-values="smsVariableDefaultValueService.list"
                                                   :sms-body="smsBody"/>
                                     </div>
                                 </md-tab>
+                                <md-tab @click="tab='customer-balance-settings'" id="tab-customer-balance-settings"
+                                        md-label="Customer Balance Feedback Settings">
+                                    <div class="md-layout md-gutter md-size-100">
+                                        <div class="md-layout-item notice-message-area">
+                                            <p style="font-size: large;font-weight: 500;">{{ $tc('words.notice')}} !</p>
+                                            Current Balance Key is for the customers that want to get their current
+                                            balance. When the customers want to get their current balance, they need
+                                            to send this key as SMS"
+                                        </div>
+                                        <div class="md-layout-item md-size-100">
+                                            <md-field :class="{'md-invalid': errors.has('meter_balance_key')}">
+                                                <label for="meter_balance_key">Current Balance Key</label>
+                                                <md-input
+                                                        v-model="feedbackWordService.feedbackWords.meterBalance"
+                                                        id="meter_balance_key"
+                                                        name="meter_balance_key"
+                                                        v-validate="'required'"
+                                                ></md-input>
+                                                <span class="md-error">{{ errors.first('meter_balance_key')}}</span>
+                                            </md-field>
+                                        </div>
+                                        <div class="md-layout-item md-size-100">
+                                            <div v-for="(smsBody,index) in smsBodiesService.balanceFeedbacksList"
+                                                 :key="index">
+                                                <sms-body
+                                                        ref="smsBody_balance_ref"
+                                                        tab-name="customer-balance-settings"
+                                                        :sms-variable-default-values="smsVariableDefaultValueService.list"
+                                                        :sms-body="smsBody"/>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </md-tab>
                             </md-tabs>
-
-
                         </md-card-content>
                         <md-card-actions>
                             <md-button class="md-raised md-primary" @click="updateSmsSetting()">Save</md-button>
@@ -144,7 +187,7 @@ import Widget from '../Shared/Widget'
 import { SmsVariableDefaultValueService } from '../../services/SmsVariableDefaultValueService'
 import { SmsBodiesService } from '../../services/SmsBodiesService'
 import SmsBody from './SmsBody'
-import { EventBus } from '../../eventbus'
+import { FeedbackWordService } from '../../services/FeedbackWordService'
 
 export default {
     name: 'Setting',
@@ -157,6 +200,7 @@ export default {
             syncPeriods: ['year', 'month', 'hour', 'week', 'day', 'minute'],
             smsVariableDefaultValueService: new SmsVariableDefaultValueService(),
             smsBodiesService: new SmsBodiesService(),
+            feedbackWordService: new FeedbackWordService(),
             tab: 'main-settings'
         }
     }, created () {
@@ -165,42 +209,58 @@ export default {
     mounted () {
         this.getSettings()
         this.getSmsBodies()
+        this.getSmsFeedbackWords()
+
     },
     methods: {
         async getSettings () {
             await this.settingService.getSettings()
         },
         async updateSyncSetting () {
-            let validator = await this.$validator.validateAll()
-            if (validator) {
-                try {
-                    this.loadingSync = true
-                    await this.settingService.updateSyncSettings()
-                    this.loadingSync = false
-                    this.alertNotify('success', 'Sync settings updated.')
-                } catch (e) {
-                    this.loadingSync = false
-                    this.alertNotify('error', e.message)
-                }
+            let validator = await this.$validator.validateAll('Synchronization-Form')
+            if (!validator) {
+                return
+            }
+            try {
+                this.loadingSync = true
+                await this.settingService.updateSyncSettings()
+                this.loadingSync = false
+                this.alertNotify('success', 'Sync settings updated.')
+            } catch (e) {
+                this.loadingSync = false
+                this.alertNotify('error', e.message)
             }
         },
         async updateSmsSetting () {
-
             if (this.tab === 'notification-settings') {
-                EventBus.$emit('checkValidate')
-                if (!this.smsBodiesService.list.filter((x) => !x.validation).length) {
+                let refs = this.$refs.smsBody_notification_ref
+                await this.validateSmsBodies(refs)
+
+                if (!this.smsBodiesService.lowBalanceNotifierList.filter((x) => !x.validation).length) {
                     try {
-                        await this.smsBodiesService.updateSmsBodies()
+                        await this.smsBodiesService.updateSmsBodies(this.tab)
+                        this.alertNotify('success', 'Updated Successfully')
+                    } catch (e) {
+                        this.alertNotify('error', e.message)
+                    }
+                }
+            } else if (this.tab === 'customer-balance-settings') {
+                let refs = this.$refs.smsBody_balance_ref
+                await this.validateSmsBodies(refs)
+
+                if (!this.smsBodiesService.balanceFeedbacksList.filter((x) => !x.validation).length) {
+                    try {
+                        await this.feedbackWordService.updateFeedbackWords()
+                        await this.smsBodiesService.updateSmsBodies(this.tab)
                         this.alertNotify('success', 'Updated Successfully')
                     } catch (e) {
                         this.alertNotify('error', e.message)
                     }
                 }
             } else {
-                let validator = await this.$validator.validateAll()
+                let validator = await this.$validator.validateAll('Main-Form')
                 if (validator) {
                     try {
-
                         this.loadingSms = true
                         await this.settingService.updateSmsSettings()
                         this.loadingSms = false
@@ -211,7 +271,6 @@ export default {
                     }
                 }
             }
-
         },
         async getSmsVariableDefaultValues () {
             try {
@@ -225,6 +284,18 @@ export default {
                 await this.smsBodiesService.getSmsBodies()
             } catch (e) {
                 this.alertNotify('error', e.message)
+            }
+        },
+        async getSmsFeedbackWords () {
+            try {
+                await this.feedbackWordService.getFeedbackWords()
+            } catch (e) {
+                this.alertNotify('error', e.message)
+            }
+        },
+        async validateSmsBodies (refs) {
+            for (const ref of refs) {
+                await ref.validateBody()
             }
         },
         alertNotify (type, message) {
@@ -242,5 +313,14 @@ export default {
 <style scoped>
     .setting-card {
         padding: 2rem !important;
+    }
+
+    .notice-message-area {
+        padding: 20px;
+        background-color: #badee4;
+        margin: 10px;
+        d-webkit-border-radius: 16px;
+        -moz-border-radius: 16px;
+        border-radius: 16px;
     }
 </style>

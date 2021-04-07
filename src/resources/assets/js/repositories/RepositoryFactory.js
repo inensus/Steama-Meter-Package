@@ -9,7 +9,7 @@ import SmsSettingRepository from './SmsSettingRepository'
 import SyncSettingRepository from './SyncSettingRepository'
 import SmsBodiesRepository from './SmsBodiesRepository'
 import SmsVariableDefaultValueRepository from './SmsVariableDefaultValueRepository'
-
+import FeedbackWordRepository from './FeedbackWordRepository'
 
 const repositories = {
     'paginate': PaginatorRepository,
@@ -22,7 +22,8 @@ const repositories = {
     'smsSetting': SmsSettingRepository,
     'syncSetting': SyncSettingRepository,
     'smsBodies':SmsBodiesRepository,
-    'smsVariableDefaultValue':SmsVariableDefaultValueRepository
+    'smsVariableDefaultValue':SmsVariableDefaultValueRepository,
+    'feedBackWord':FeedbackWordRepository
 }
 export default {
     get: name => repositories[name]

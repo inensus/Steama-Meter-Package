@@ -7,6 +7,7 @@ use App\Models\Cluster;
 use App\Models\GeographicalInformation;
 use App\Models\MiniGrid;
 use Carbon\Carbon;
+use GuzzleHttp\Exception\GuzzleException;
 use Illuminate\Support\Facades\Log;
 use Inensus\SteamaMeter\Helpers\ApiHelpers;
 use Inensus\SteamaMeter\Http\Requests\SteamaMeterApiRequests;
@@ -14,6 +15,7 @@ use Inensus\SteamaMeter\Models\SteamaSite;
 use Exception;
 use Inensus\SteamaMeter\Models\SteamaSyncAction;
 use Inensus\SteamaMeter\Models\SyncStatus;
+use Inensus\StemaMeter\Exceptions\SteamaApiResponseException;
 
 class SteamaSiteService implements ISynchronizeService
 {
@@ -68,7 +70,7 @@ class SteamaSiteService implements ISynchronizeService
         try {
             $syncCheck = $this->syncCheck(true);
             $syncCheck['data']->filter(function ($value) {
-                return $value['syncStatus'] === 3;
+                return $value['syncStatus'] === SyncStatus::NOT_REGISTERED_YET;
             })->each(function ($site) {
                 $miniGrid = $this->creteRelatedMiniGrid($site);
                 $this->site->newQuery()->create([
@@ -80,7 +82,7 @@ class SteamaSiteService implements ISynchronizeService
             });
 
             $syncCheck['data']->filter(function ($value) {
-                return $value['syncStatus'] === 2;
+                return $value['syncStatus'] === SyncStatus::MODIFIED;
             })->each(function ($site) {
                 $miniGrid = is_null($site['relatedMiniGrid'])  ?
                     $this->creteRelatedMiniGrid($site) : $this->updateRelatedMiniGrid($site, $site['relatedMiniGrid']);
@@ -115,11 +117,11 @@ class SteamaSiteService implements ISynchronizeService
                     array_push($sites, $site);
                 }
             }
-        } catch (Exception $e) {
+        } catch (SteamaApiResponseException $e) {
             if ($returnData) {
                 return ['result' => false];
             }
-            throw  new Exception($e->getMessage());
+            throw  new SteamaApiResponseException($e->getMessage());
         }
         $sitesCollection = collect($sites);
         $stmSites = $this->site->newQuery()->get();
@@ -142,7 +144,7 @@ class SteamaSiteService implements ISynchronizeService
             return $site;
         });
 
-        $siteSyncStatus = $sitesCollection->whereNotIn('syncStatus', 1)->count();
+        $siteSyncStatus = $sitesCollection->whereNotIn('syncStatus', SyncStatus::SYNCED)->count();
         if ($siteSyncStatus) {
             return $returnData ? ['data' => $sitesCollection, 'result' => false] : ['result' => false];
         }

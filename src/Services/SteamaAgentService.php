@@ -15,6 +15,7 @@ use Inensus\SteamaMeter\Models\SteamaAgent;
 use Exception;
 use Inensus\SteamaMeter\Models\SteamaSite;
 use Inensus\SteamaMeter\Models\SyncStatus;
+use Inensus\StemaMeter\Exceptions\SteamaApiResponseException;
 
 class SteamaAgentService implements ISynchronizeService
 {
@@ -92,7 +93,7 @@ class SteamaAgentService implements ISynchronizeService
         try {
             $syncCheck = $this->syncCheck(true);
             $syncCheck['data']->filter(function ($value) {
-                return $value['syncStatus'] === 3;
+                return $value['syncStatus'] === SyncStatus::NOT_REGISTERED_YET;
             })->each(function ($agent) {
                 $createdAgent = $this->createRelatedAgent($agent);
                 $this->stmAgent->newQuery()->create([
@@ -105,7 +106,7 @@ class SteamaAgentService implements ISynchronizeService
                 ]);
             });
             $syncCheck['data']->filter(function ($value) {
-                return $value['syncStatus'] === 2;
+                return $value['syncStatus'] === SyncStatus::SYNCED;
             })->each(function ($agent) {
                 $relatedAgent = is_null($agent['relatedAgent']) ?
                     $this->createRelatedAgent($agent) : $this->updateRelatedAgent(
@@ -146,11 +147,11 @@ class SteamaAgentService implements ISynchronizeService
                     array_push($agents, $agent);
                 }
             }
-        } catch (Exception $e) {
+        } catch (SteamaApiResponseException $e) {
             if ($returnData) {
                 return ['result' => false];
             }
-            throw  new Exception($e->getMessage());
+            throw  new SteamaApiResponseException($e->getMessage());
         }
         $agentsCollection = collect($agents);
         $stmAgents = $this->stmAgent->newQuery()->get();
@@ -173,7 +174,7 @@ class SteamaAgentService implements ISynchronizeService
             $agent['registeredStmAgent'] = $registeredStmAgent;
             return $agent;
         });
-        $agentSyncStatus = $agentsCollection->whereNotIn('syncStatus', 1)->count();
+        $agentSyncStatus = $agentsCollection->whereNotIn('syncStatus', SyncStatus::SYNCED)->count();
         if ($agentSyncStatus) {
             return $returnData ? ['data' => $agentsCollection, 'result' => false] : ['result' => false];
         }

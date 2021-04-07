@@ -2,7 +2,9 @@
 
 namespace Inensus\SteamaMeter\Sms\Senders;
 
-class LowBalanceLimitNotifier extends SteamaSmsSender
+use App\Sms\Senders\SmsSender;
+
+class LowBalanceLimitNotifier extends SmsSender
 {
     protected $references = [
         'header' => 'SteamaSmsLowBalanceHeader',
