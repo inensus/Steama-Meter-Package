@@ -5,11 +5,13 @@ namespace Inensus\SteamaMeter\Console\Commands;
 use Illuminate\Console\Command;
 use Inensus\SteamaMeter\Helpers\ApiHelpers;
 use Inensus\SteamaMeter\Services\MenuItemService;
+use Inensus\SteamaMeter\Services\PackageInstallationService;
 use Inensus\SteamaMeter\Services\SteamaAgentService;
 use Inensus\SteamaMeter\Services\SteamaCredentialService;
 use Inensus\SteamaMeter\Services\SteamaSiteLevelPaymentPlanTypeService;
 use Inensus\SteamaMeter\Services\SteamaSiteService;
 use Inensus\SteamaMeter\Services\SteamaSmsBodyService;
+use Inensus\SteamaMeter\Services\SteamaSmsFeedbackWordService;
 use Inensus\SteamaMeter\Services\SteamaSmsSettingService;
 use Inensus\SteamaMeter\Services\SteamaSmsVariableDefaultValueService;
 use Inensus\SteamaMeter\Services\SteamaSyncSettingService;
@@ -33,6 +35,10 @@ class InstallPackage extends Command
     private $syncSettingService;
     private $smsBodyService;
     private $defaultValueService;
+    private $steamaSmsFeedbackWordService;
+    private $packageInstallationService;
+
+
     public function __construct(
         MenuItemService $menuItemService,
         SteamaAgentService $agentService,
@@ -45,7 +51,9 @@ class InstallPackage extends Command
         SteamaSmsSettingService $smsSettingService,
         SteamaSyncSettingService $syncSettingService,
         SteamaSmsBodyService $smsBodyService,
-        SteamaSmsVariableDefaultValueService $defaultValueService
+        SteamaSmsVariableDefaultValueService $defaultValueService,
+        SteamaSmsFeedbackWordService $steamaSmsFeedbackWordService,
+        PackageInstallationService $packageInstallationService
     ) {
         parent::__construct();
         $this->apiHelpers = $apiHelpers;
@@ -60,6 +68,8 @@ class InstallPackage extends Command
         $this->syncSettingService = $syncSettingService;
         $this->smsBodyService = $smsBodyService;
         $this->defaultValueService = $defaultValueService;
+        $this->steamaSmsFeedbackWordService = $steamaSmsFeedbackWordService;
+        $this->packageInstallationService = $packageInstallationService;
     }
 
     public function handle(): void
@@ -74,8 +84,7 @@ class InstallPackage extends Command
         $this->info('Creating database tables\n');
         $this->call('migrate');
 
-        $this->smsBodyService->createSmsBodies();
-        $this->defaultValueService->createSmsVariableDefaultValues();
+        $this->packageInstallationService->createDefaultSettingRecords();
         $this->info('Copying vue files\n');
         $this->call('vendor:publish', [
             '--provider' => "Inensus\SteamaMeter\Providers\SteamaMeterServiceProvider",
@@ -107,8 +116,6 @@ class InstallPackage extends Command
                 'subMenuItems' => $menuItems['subMenuItems'],
             ]);
         }
-        $this->syncSettingService->createDefaultSettings();
-        $this->smsSettingService->createDefaultSettings();
         $this->call('sidebar:generate');
 
         $this->info('Package installed successfully..');

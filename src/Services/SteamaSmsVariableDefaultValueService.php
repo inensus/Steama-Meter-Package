@@ -39,7 +39,9 @@ class SteamaSmsVariableDefaultValueService
             ]
         ];
         collect($smsVariableDefaultValues)->each(function ($variable) {
-            $this->smsVariableDefaultValue->newQuery()->create($variable);
+            $this->smsVariableDefaultValue->newQuery()
+                ->firstOrCreate(['variable'=>$variable['variable']],
+                    $variable);
         });
     }
 }

@@ -8,10 +8,12 @@ use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\Collection;
 use Illuminate\Filesystem\Filesystem;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\ServiceProvider;
 use Inensus\SteamaMeter\Console\Commands\InstallPackage;
 use Inensus\SteamaMeter\Console\Commands\SteamaMeterDataSynchronizer;
 use Inensus\SteamaMeter\Console\Commands\SteamaSmsNotifier;
+use Inensus\SteamaMeter\Console\Commands\UpdatePackage;
 use Inensus\SteamaMeter\Models\SteamaAssetRatesPaymentPlan;
 use Inensus\SteamaMeter\Models\SteamaCustomer;
 use Inensus\SteamaMeter\Models\SteamaCustomerBasisTimeOfUsage;
@@ -40,8 +42,8 @@ class SteamaMeterServiceProvider extends ServiceProvider
             $this->commands([
                 InstallPackage::class,
                 SteamaMeterDataSynchronizer::class,
-                SteamaSmsNotifier::class
-
+                SteamaSmsNotifier::class,
+                UpdatePackage::class
             ]);
         }
         $this->app->booted(function ($app) {
@@ -60,8 +62,9 @@ class SteamaMeterServiceProvider extends ServiceProvider
                 'tariff_override' => SteamaTariffOverridePaymentPlan::class,
                 'customer_time_of_usage' => SteamaCustomerBasisTimeOfUsage::class,
                 'steama_transaction' => SteamaTransaction::class,
-                'sync_setting' => SteamaSyncSetting::class,
-                'sms_setting' => SteamaSmsSetting::class,
+                'steama_sync_setting' => SteamaSyncSetting::class,
+                'steama_sms_setting' => SteamaSmsSetting::class,
+
             ]
         );
     }
@@ -101,6 +104,14 @@ class SteamaMeterServiceProvider extends ServiceProvider
         $timestamp = date('Y_m_d_His');
         return Collection::make($this->app->databasePath() . DIRECTORY_SEPARATOR . 'migrations' . DIRECTORY_SEPARATOR)
             ->flatMap(function ($path) use ($filesystem) {
+                if (count($filesystem->glob($path . '*_create_steama_tables.php'))) {
+                    $file = $filesystem->glob($path . '*_create_steama_tables.php')[0];
+
+                    file_put_contents($file, file_get_contents(__DIR__ . '/../../database/migrations/create_steama_tables.php.stub'));
+                    DB::table('migrations')
+                        ->where('migration',substr(explode("/migrations/", $file)[1], 0, -4))
+                        ->delete();
+                }
                 return $filesystem->glob($path . '*_create_steama_tables.php');
             })->push($this->app->databasePath() . "/migrations/{$timestamp}_create_steama_tables.php")
             ->first();

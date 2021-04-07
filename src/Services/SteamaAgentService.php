@@ -15,6 +15,7 @@ use Inensus\SteamaMeter\Models\SteamaAgent;
 use Exception;
 use Inensus\SteamaMeter\Models\SteamaSite;
 use Inensus\SteamaMeter\Models\SyncStatus;
+use Inensus\StemaMeter\Exceptions\SteamaApiResponseException;
 
 class SteamaAgentService implements ISynchronizeService
 {
@@ -146,11 +147,11 @@ class SteamaAgentService implements ISynchronizeService
                     array_push($agents, $agent);
                 }
             }
-        } catch (Exception $e) {
+        } catch (SteamaApiResponseException $e) {
             if ($returnData) {
                 return ['result' => false];
             }
-            throw  new Exception($e->getMessage());
+            throw  new SteamaApiResponseException($e->getMessage());
         }
         $agentsCollection = collect($agents);
         $stmAgents = $this->stmAgent->newQuery()->get();
@@ -173,7 +174,7 @@ class SteamaAgentService implements ISynchronizeService
             $agent['registeredStmAgent'] = $registeredStmAgent;
             return $agent;
         });
-        $agentSyncStatus = $agentsCollection->whereNotIn('syncStatus', 1)->count();
+        $agentSyncStatus = $agentsCollection->whereNotIn('syncStatus', SyncStatus::SYNCED)->count();
         if ($agentSyncStatus) {
             return $returnData ? ['data' => $agentsCollection, 'result' => false] : ['result' => false];
         }
