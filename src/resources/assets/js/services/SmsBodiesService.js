@@ -4,7 +4,8 @@ import { ErrorHandler } from '../Helpers/ErrorHander'
 export class SmsBodiesService {
     constructor () {
         this.repository = RepositoryFactory.get('smsBodies')
-        this.list = []
+        this.lowBalanceNotifierList = []
+        this.balanceFeedbacksList = []
         this.smsBody = {
             id: null,
             reference: null,
@@ -17,7 +18,8 @@ export class SmsBodiesService {
     }
 
     fromJson (smsBodies) {
-        this.list = []
+        this.lowBalanceNotifierList = []
+        this.balanceFeedbacksList = []
         for (let s in smsBodies) {
             let smsBody = {
                 id: smsBodies[s].id,
@@ -28,7 +30,11 @@ export class SmsBodiesService {
                 variables: smsBodies[s].variables.split(','),
             }
             smsBody.validation = smsBody.body.length > 0
-            this.list.push(smsBody)
+            if (smsBody.reference.includes('LowBalance')) {
+                this.lowBalanceNotifierList.push(smsBody)
+            } else {
+                this.balanceFeedbacksList.push(smsBody)
+            }
         }
     }
 
@@ -48,17 +54,30 @@ export class SmsBodiesService {
         }
     }
 
-    async updateSmsBodies () {
+    async updateSmsBodies (tabName) {
         try {
             let smsBodiesPM = []
-            this.list.forEach((e) => {
-                let smsBody = {
-                    id: e.id,
-                    reference: e.reference,
-                    body: e.body,
-                }
-                smsBodiesPM.push(smsBody)
-            })
+            if (tabName === 'notification-settings') {
+
+                this.lowBalanceNotifierList.forEach((e) => {
+                    let smsBody = {
+                        id: e.id,
+                        reference: e.reference,
+                        body: e.body,
+                    }
+                    smsBodiesPM.push(smsBody)
+                })
+            } else {
+                this.balanceFeedbacksList.forEach((e) => {
+                    let smsBody = {
+                        id: e.id,
+                        reference: e.reference,
+                        body: e.body,
+                    }
+                    smsBodiesPM.push(smsBody)
+                })
+            }
+
             let response = await this.repository.update(smsBodiesPM)
             if (response.status === 200) {
                 this.fromJson(response.data.data)

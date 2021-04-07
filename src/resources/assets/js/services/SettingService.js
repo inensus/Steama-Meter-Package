@@ -27,7 +27,7 @@ export class SettingService {
             settingType: {}
         }
 
-        if (settingData.setting_type === 'sync_setting') {
+        if (settingData.setting_type === 'steama_sync_setting') {
             setting.settingType = {
                 id: settingData.setting_sync.id,
                 actionName: settingData.setting_sync.action_name,
@@ -72,7 +72,7 @@ export class SettingService {
 
     async updateSyncSettings() {
         try {
-            await this.syncSettingsService.updateSyncSettings(this.list.filter(x => x.settingTypeName === 'sync_setting'))
+            await this.syncSettingsService.updateSyncSettings(this.list.filter(x => x.settingTypeName === 'steama_sync_setting'))
         } catch (e) {
             let errorMessage = e.message
             return new ErrorHandler(errorMessage, 'http')
@@ -81,7 +81,7 @@ export class SettingService {
 
     async updateSmsSettings() {
         try {
-            await this.smsSettingsService.updateSmsSettings(this.list.filter(x => x.settingTypeName === 'sms_setting'))
+            await this.smsSettingsService.updateSmsSettings(this.list.filter(x => x.settingTypeName === 'steama_sms_setting'))
         } catch (e) {
             let errorMessage = e.message
             return new ErrorHandler(errorMessage, 'http')
