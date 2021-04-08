@@ -6,19 +6,8 @@ use App\Models\MenuItems;
 
 class MenuItemService
 {
-    private $menuItems;
-
-    public function __construct(MenuItems $menuItems)
-    {
-        $this->menuItems = $menuItems;
-    }
-
     public function createMenuItems()
     {
-        $menuItem = $this->menuItems->newQuery()->where('name', 'Steama Meter')->first();
-        if ($menuItem) {
-            return [];
-        }
         $menuItem = [
             'name' => 'Steamaco Meter',
             'url_slug' => '',
@@ -55,11 +44,13 @@ class MenuItemService
             'url_slug' => '/steama-meters/steama-agent/page/1',
         ];
         array_push($subMenuItems, $subMenuItem5);
+
         $subMenuItem6 = [
             'name' => 'Settings',
             'url_slug' => '/steama-meters/steama-setting',
         ];
         array_push($subMenuItems, $subMenuItem6);
+
         return ['menuItem' => $menuItem, 'subMenuItems' => $subMenuItems];
     }
 }

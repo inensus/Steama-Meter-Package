@@ -110,12 +110,10 @@ class InstallPackage extends Command
         $this->call('routes:generate');
 
         $menuItems = $this->menuItemService->createMenuItems();
-        if (array_key_exists('menuItem', $menuItems)) {
             $this->call('menu-items:generate', [
                 'menuItem' => $menuItems['menuItem'],
                 'subMenuItems' => $menuItems['subMenuItems'],
             ]);
-        }
         $this->call('sidebar:generate');
 
         $this->info('Package installed successfully..');
