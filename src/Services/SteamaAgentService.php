@@ -106,7 +106,7 @@ class SteamaAgentService implements ISynchronizeService
                 ]);
             });
             $syncCheck['data']->filter(function ($value) {
-                return $value['syncStatus'] === SyncStatus::SYNCED;
+                return $value['syncStatus'] === SyncStatus::MODIFIED;
             })->each(function ($agent) {
                 $relatedAgent = is_null($agent['relatedAgent']) ?
                     $this->createRelatedAgent($agent) : $this->updateRelatedAgent(

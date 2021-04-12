@@ -24,7 +24,6 @@
                     <md-table-cell md-label="Name" md-sort-by="name">{{ item.name }}</md-table-cell>
                     <md-table-cell md-label="Surname" md-sort-by="name">{{ item.surname }}</md-table-cell>
                     <md-table-cell md-label="Site" md-sort-by="siteName">{{ item.siteName}}</md-table-cell>
-                    <md-table-cell md-label="Site" md-sort-by="siteName">{{ item.siteName}}</md-table-cell>
                     <md-table-cell md-label="Is Credit Limited" md-sort-by="isCreditLimited">{{ item.isCreditLimited}}
                     </md-table-cell>
                     <md-table-cell md-label="Credit Balance" md-sort-by="creditBalance">{{ item.creditBalance }}
