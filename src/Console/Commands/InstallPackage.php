@@ -143,3 +143,4 @@ class InstallPackage extends Command
         }
     }
 }
+

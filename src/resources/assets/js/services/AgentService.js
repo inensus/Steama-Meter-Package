@@ -35,6 +35,7 @@ export class AgentService {
     }
 
     updateList (data) {
+        this.list=[]
         for (let a in data) {
             let agent =  this.fromJson(data[a])
             this.list.push(agent)
