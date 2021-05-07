@@ -76,54 +76,70 @@ class InstallPackage extends Command
     {
         $this->info('Installing Steamaco Meter Integration Package\n');
 
+        $this->publishMigrations();
+        $this->createDatabaseTables();
+        $this->packageInstallationService->createDefaultSettingRecords();
+        $this->publishVueFiles();
+        $this->apiHelpers->registerSparkMeterManufacturer();
+        $this->credentialService->createCredentials();
+        $this->createPluginRecord();
+        $tariff = $this->tariffService->createTariff();
+        $this->userTypeService->createUserTypes($tariff);
+        $this->paymentPlanService->createPaymentPlans();
+        $this->agentService->createSteamaAgentCommission();
+        $this->call('routes:generate');
+        $this->createMenuItems();
+        $this->call('sidebar:generate');
+        $this->info('Package installed successfully..');
+        if (!$this->siteService->checkLocationAvailability()) {
+            $this->warn('------------------------------');
+            $this->warn("Steamaco Meter package needs least one registered Cluster.");
+            $this->warn("If you have no Cluster, please navigate to #Locations# section and register your locations.");
+        }
+    }
+
+    private function publishMigrations()
+    {
         $this->info('Copying migrations\n');
         $this->call('vendor:publish', [
             '--provider' => "Inensus\SteamaMeter\Providers\SteamaMeterServiceProvider",
             '--tag' => "migrations"
         ]);
+    }
+
+    private function createDatabaseTables()
+    {
         $this->info('Creating database tables\n');
         $this->call('migrate');
+    }
 
-        $this->packageInstallationService->createDefaultSettingRecords();
+    private function publishVueFiles()
+    {
         $this->info('Copying vue files\n');
         $this->call('vendor:publish', [
             '--provider' => "Inensus\SteamaMeter\Providers\SteamaMeterServiceProvider",
             '--tag' => "vue-components",
             '--force' => true,
         ]);
+    }
 
-        $this->apiHelpers->registerSparkMeterManufacturer();
-
-        $this->credentialService->createCredentials();
-        $tariff = $this->tariffService->createTariff();
-        $this->userTypeService->createUserTypes($tariff);
-        $this->paymentPlanService->createPaymentPlans();
-        $this->agentService->createSteamaAgentCommission();
-
+    private function createPluginRecord()
+    {
         $this->call('plugin:add', [
             'name' => "SteamaMeter",
             'composer_name' => "inensus/steama-meter",
             'description' => "SteamaMeter integration package for MicroPowerManager",
         ]);
+    }
 
-
-        $this->call('routes:generate');
-
+    private function createMenuItems()
+    {
         $menuItems = $this->menuItemService->createMenuItems();
         if (array_key_exists('menuItem', $menuItems)) {
             $this->call('menu-items:generate', [
                 'menuItem' => $menuItems['menuItem'],
                 'subMenuItems' => $menuItems['subMenuItems'],
             ]);
-        }
-        $this->call('sidebar:generate');
-
-        $this->info('Package installed successfully..');
-
-        if (!$this->siteService->checkLocationAvailability()) {
-            $this->warn('------------------------------');
-            $this->warn("Steamaco Meter package needs least one registered Cluster.");
-            $this->warn("If you have no Cluster, please navigate to #Locations# section and register your locations.");
         }
     }
 }

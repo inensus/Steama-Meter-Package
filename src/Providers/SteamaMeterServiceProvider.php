@@ -74,7 +74,7 @@ class SteamaMeterServiceProvider extends ServiceProvider
         $this->mergeConfigFrom(__DIR__ . '/../../config/steama-meter.php', 'steama');
         $this->app->register(EventServiceProvider::class);
         $this->app->register(ObserverServiceProvider::class);
-        $this->app->bind('SteamaMeterApi',SteamaMeterApi::class);
+        $this->app->bind('SteamaMeterApi', SteamaMeterApi::class);
     }
 
     public function publishConfigFiles()
@@ -107,10 +107,9 @@ class SteamaMeterServiceProvider extends ServiceProvider
                 if (count($filesystem->glob($path . '*_create_steama_tables.php'))) {
                     $file = $filesystem->glob($path . '*_create_steama_tables.php')[0];
 
-                    file_put_contents($file, file_get_contents(__DIR__ . '/../../database/migrations/create_steama_tables.php.stub'));
-                    DB::table('migrations')
-                        ->where('migration',substr(explode("/migrations/", $file)[1], 0, -4))
-                        ->delete();
+                    file_put_contents($file,
+                        file_get_contents(__DIR__ . '/../../database/migrations/create_steama_tables.php.stub'));
+
                 }
                 return $filesystem->glob($path . '*_create_steama_tables.php');
             })->push($this->app->databasePath() . "/migrations/{$timestamp}_create_steama_tables.php")
