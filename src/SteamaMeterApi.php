@@ -128,21 +128,6 @@ class SteamaMeterApi implements IManufacturerAPI
             'timestamp' => $transactionResult['timestamp'],
             'synchronization_status' => $transactionResult['synchronization_status']
         ]);
-        $transaction = $this->transaction->newQuery()
-            ->with('originalAirtel', 'originalVodacom', 'orginalAgent', 'originalThirdParty')
-            ->find($transactionContainer->transaction->id);
-        if ($transaction->originalAirtel) {
-            $transaction->originalAirtel->associate($manufacturerTransaction);
-            $transaction->originalAirtel->save();
-        } elseif ($transaction->originalVodacom) {
-            $transaction->originalVodacom->associate($manufacturerTransaction);
-            $transaction->originalVodacom->save();
-        } elseif ($transaction->orginalAgent) {
-            $transaction->orginalAgent->associate($manufacturerTransaction);
-            $transaction->orginalAgent->save();
-        } elseif ($transaction->originalThirdParty) {
-            $transaction->originalThirdParty->associate($manufacturerTransaction);
-            $transaction->originalThirdParty->save();
-        }
+        $transactionContainer->transaction->originalTransaction()->associate($manufacturerTransaction)->save();
     }
 }
