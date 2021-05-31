@@ -60,7 +60,6 @@ class SteamaMeterApi implements IManufacturerAPI
         $stmCustomer = $this->customerService->syncTransactionCustomer($stmCustomer->id);
         $customerEnergyPrice = $stmCustomer->energy_price;
         $transactionContainer->chargedEnergy += $transactionContainer->amount / ($customerEnergyPrice);
-
         if (config('app.debug')) {
             return [
                 'token' => 'debug-token',
