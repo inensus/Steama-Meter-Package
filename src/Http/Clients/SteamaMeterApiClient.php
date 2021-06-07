@@ -1,6 +1,6 @@
 <?php
 
-namespace Inensus\SteamaMeter\Http\Requests;
+namespace Inensus\SteamaMeter\Http\Clients;
 
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
@@ -9,12 +9,11 @@ use Inensus\SteamaMeter\Models\SteamaCredential;
 use Inensus\StemaMeter\Exceptions\ModelNotFoundException;
 use Inensus\StemaMeter\Exceptions\SteamaApiResponseException;
 
-class SteamaMeterApiRequests
+class SteamaMeterApiClient
 {
     private $client;
     private $apiHelpers;
     private $credential;
-
 
     public function __construct(
         Client $httpClient,
