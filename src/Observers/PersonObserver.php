@@ -4,7 +4,7 @@ namespace Inensus\SteamaMeter\Observers;
 
 use App\Models\Person\Person;
 use Inensus\SteamaMeter\Helpers\ApiHelpers;
-use Inensus\SteamaMeter\Http\Requests\SteamaMeterApiRequests;
+use Inensus\SteamaMeter\Http\Clients\SteamaMeterApiClient;
 use Inensus\SteamaMeter\Models\SteamaCustomer;
 use Inensus\SteamaMeter\Services\SteamaCustomerService;
 use Inensus\SteamaMeter\Services\SteamaMeterService;
@@ -24,7 +24,7 @@ class PersonObserver
         SteamaCustomerService $stmCustomerService,
         Person $person,
         SteamaCustomer $steamaCustomer,
-        SteamaMeterApiRequests $steamaApi
+        SteamaMeterApiClient $steamaApi
     ) {
         $this->apiHelpers = $apiHelpers;
         $this->stmCustomerService = $stmCustomerService;
