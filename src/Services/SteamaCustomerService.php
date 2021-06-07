@@ -6,11 +6,10 @@ use App\Http\Services\AddressService;
 use App\Models\City;
 use App\Models\ConnectionType;
 use App\Models\Person\Person;
-use Carbon\Carbon;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Log;
 use Inensus\SteamaMeter\Helpers\ApiHelpers;
-use Inensus\SteamaMeter\Http\Requests\SteamaMeterApiRequests;
+use Inensus\SteamaMeter\Http\Clients\SteamaMeterApiClient;
 use Inensus\SteamaMeter\Models\SteamaCustomer;
 use Exception;
 use Inensus\SteamaMeter\Models\SteamaCustomerBasisPaymentPlan;
@@ -50,7 +49,7 @@ class SteamaCustomerService implements ISynchronizeService
 
     public function __construct(
         SteamaCustomer $steamaCustomerModel,
-        SteamaMeterApiRequests $steamaApi,
+        SteamaMeterApiClient $steamaApi,
         ApiHelpers $apiHelpers,
         Person $person,
         SteamaFlatRatePaymentPlan $flatRatePaymentPlan,

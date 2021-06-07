@@ -10,7 +10,7 @@ use App\Models\Person\Person;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Log;
 use Inensus\SteamaMeter\Helpers\ApiHelpers;
-use Inensus\SteamaMeter\Http\Requests\SteamaMeterApiRequests;
+use Inensus\SteamaMeter\Http\Clients\SteamaMeterApiClient;
 use Inensus\SteamaMeter\Models\SteamaAgent;
 use Exception;
 use Inensus\SteamaMeter\Models\SteamaSite;
@@ -34,7 +34,7 @@ class SteamaAgentService implements ISynchronizeService
     public function __construct(
         AgentCommission $agentCommissionModel,
         SteamaAgent $steamaAgentModel,
-        SteamaMeterApiRequests $steamaApi,
+        SteamaMeterApiClient $steamaApi,
         ApiHelpers $apiHelpers,
         Agent $agent,
         Person $person,
