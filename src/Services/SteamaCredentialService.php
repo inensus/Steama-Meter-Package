@@ -2,10 +2,10 @@
 
 namespace Inensus\SteamaMeter\Services;
 
-use Exception;
+
 use GuzzleHttp\Exception\GuzzleException;
 use Illuminate\Support\Facades\Log;
-use Inensus\SteamaMeter\Http\Requests\SteamaMeterApiRequests;
+use Inensus\SteamaMeter\Http\Clients\SteamaMeterApiClient;
 use Inensus\SteamaMeter\Models\SteamaCredential;
 
 class SteamaCredentialService
@@ -16,7 +16,7 @@ class SteamaCredentialService
 
     public function __construct(
         SteamaCredential $credentialModel,
-        SteamaMeterApiRequests $steamaApi
+        SteamaMeterApiClient $steamaApi
     ) {
         $this->credential = $credentialModel;
         $this->steamaApi = $steamaApi;

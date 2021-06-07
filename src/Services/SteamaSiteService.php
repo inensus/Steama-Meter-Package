@@ -6,14 +6,11 @@ use App\Models\City;
 use App\Models\Cluster;
 use App\Models\GeographicalInformation;
 use App\Models\MiniGrid;
-use Carbon\Carbon;
-use GuzzleHttp\Exception\GuzzleException;
 use Illuminate\Support\Facades\Log;
 use Inensus\SteamaMeter\Helpers\ApiHelpers;
-use Inensus\SteamaMeter\Http\Requests\SteamaMeterApiRequests;
+use Inensus\SteamaMeter\Http\Clients\SteamaMeterApiClient;
 use Inensus\SteamaMeter\Models\SteamaSite;
 use Exception;
-use Inensus\SteamaMeter\Models\SteamaSyncAction;
 use Inensus\SteamaMeter\Models\SyncStatus;
 use Inensus\StemaMeter\Exceptions\SteamaApiResponseException;
 
@@ -31,7 +28,7 @@ class SteamaSiteService implements ISynchronizeService
     private $steamaSyncActionService;
     public function __construct(
         SteamaSite $steamaSiteModel,
-        SteamaMeterApiRequests $steamaApi,
+        SteamaMeterApiClient $steamaApi,
         ApiHelpers $apiHelpers,
         MiniGrid $miniGrid,
         Cluster $cluster,

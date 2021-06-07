@@ -7,7 +7,7 @@ use App\Models\Transaction\ThirdPartyTransaction;
 use App\Models\Transaction\Transaction;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
-use Inensus\SteamaMeter\Http\Requests\SteamaMeterApiRequests;
+use Inensus\SteamaMeter\Http\Clients\SteamaMeterApiClient;
 use Inensus\SteamaMeter\Models\SteamaCustomer;
 use Inensus\SteamaMeter\Models\SteamaMeter;
 use Inensus\SteamaMeter\Models\SteamaTransaction;
@@ -39,7 +39,7 @@ class SteamaTransactionsService implements ISynchronizeService
         SteamaSiteService $steamaSiteService,
         SteamaAgentService $steamaAgentService,
         SteamaTransaction $steamaTransaction,
-        SteamaMeterApiRequests $steamaMeterApiRequests,
+        SteamaMeterApiClient $steamaApi,
         Transaction $transaction,
         SteamaMeter $steamaMeter,
         ThirdPartyTransaction $thirdPartyTransaction,
@@ -54,7 +54,7 @@ class SteamaTransactionsService implements ISynchronizeService
         $this->steamaSiteService = $steamaSiteService;
         $this->steamaAgentService = $steamaAgentService;
         $this->steamaTransaction = $steamaTransaction;
-        $this->steamaApi = $steamaMeterApiRequests;
+        $this->steamaApi = $steamaApi;
         $this->transaction = $transaction;
         $this->steamaMeter = $steamaMeter;
         $this->thirdPartyTransaction = $thirdPartyTransaction;

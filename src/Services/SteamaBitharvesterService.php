@@ -2,7 +2,7 @@
 
 namespace Inensus\SteamaMeter\Services;
 
-use Inensus\SteamaMeter\Http\Requests\SteamaMeterApiRequests;
+use Inensus\SteamaMeter\Http\Clients\SteamaMeterApiClient;
 
 class SteamaBitharvesterService
 {
@@ -10,7 +10,7 @@ class SteamaBitharvesterService
     private $rootUrl = '/bitharvesters';
 
     public function __construct(
-        SteamaMeterApiRequests $steamaApi
+        SteamaMeterApiClient $steamaApi
     ) {
         $this->steamaApi = $steamaApi;
     }

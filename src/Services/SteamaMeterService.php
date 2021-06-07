@@ -14,7 +14,7 @@ use App\Models\Meter\MeterType;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Inensus\SteamaMeter\Helpers\ApiHelpers;
-use Inensus\SteamaMeter\Http\Requests\SteamaMeterApiRequests;
+use Inensus\SteamaMeter\Http\Clients\SteamaMeterApiClient;
 use Inensus\SteamaMeter\Models\SteamaCustomer;
 use Inensus\SteamaMeter\Models\SteamaMeter;
 use Exception;
@@ -43,7 +43,7 @@ class SteamaMeterService implements ISynchronizeService
     private $steamaSyncActionService;
     public function __construct(
         SteamaMeter $steamaMeterModel,
-        SteamaMeterApiRequests $steamaApi,
+        SteamaMeterApiClient $steamaApi,
         ApiHelpers $apiHelpers,
         Meter $meter,
         SteamaCustomer $customer,
