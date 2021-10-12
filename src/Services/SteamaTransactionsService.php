@@ -244,7 +244,7 @@ class SteamaTransactionsService implements ISynchronizeService
         ]);
 
         $token->transaction()->associate($mainTransaction);
-        $token->meter()->associate($steamaMeter->mpmMeter->first());
+        $token->meter()->associate($mainTransaction->meter);
         $token->save();
         return $token;
     }
