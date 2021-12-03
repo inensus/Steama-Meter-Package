@@ -21,7 +21,7 @@ use Exception;
 use Inensus\SteamaMeter\Models\SteamaMeterType;
 use Inensus\SteamaMeter\Models\SteamaTariff;
 use Inensus\SteamaMeter\Models\SyncStatus;
-use Inensus\StemaMeter\Exceptions\SteamaApiResponseException;
+use Inensus\SteamaMeter\Exceptions\SteamaApiResponseException;
 
 class SteamaMeterService implements ISynchronizeService
 {

@@ -3,7 +3,7 @@
 namespace Inensus\SteamaMeter\Helpers;
 
 use App\Models\Manufacturer;
-use Inensus\StemaMeter\Exceptions\SteamaApiResponseException;
+use Inensus\SteamaMeter\Exceptions\SteamaApiResponseException;
 
 class ApiHelpers
 {

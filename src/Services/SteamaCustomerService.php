@@ -21,8 +21,8 @@ use Inensus\SteamaMeter\Models\SteamaSite;
 use Inensus\SteamaMeter\Models\SteamaSubscriptionPaymentPlan;
 use Inensus\SteamaMeter\Models\SteamaUserType;
 use Inensus\SteamaMeter\Models\SyncStatus;
-use Inensus\StemaMeter\Exceptions\ModelNotFoundException;
-use Inensus\StemaMeter\Exceptions\SteamaApiResponseException;
+use Inensus\SteamaMeter\Exceptions\ModelNotFoundException;
+use Inensus\SteamaMeter\Exceptions\SteamaApiResponseException;
 
 class SteamaCustomerService implements ISynchronizeService
 {

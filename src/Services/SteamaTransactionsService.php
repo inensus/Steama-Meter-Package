@@ -11,7 +11,7 @@ use Inensus\SteamaMeter\Http\Clients\SteamaMeterApiClient;
 use Inensus\SteamaMeter\Models\SteamaCustomer;
 use Inensus\SteamaMeter\Models\SteamaMeter;
 use Inensus\SteamaMeter\Models\SteamaTransaction;
-use Inensus\StemaMeter\Exceptions\SteamaApiResponseException;
+use Inensus\SteamaMeter\Exceptions\SteamaApiResponseException;
 
 class SteamaTransactionsService implements ISynchronizeService
 {

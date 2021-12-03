@@ -12,7 +12,7 @@ use Inensus\SteamaMeter\Http\Clients\SteamaMeterApiClient;
 use Inensus\SteamaMeter\Models\SteamaSite;
 use Exception;
 use Inensus\SteamaMeter\Models\SyncStatus;
-use Inensus\StemaMeter\Exceptions\SteamaApiResponseException;
+use Inensus\SteamaMeter\Exceptions\SteamaApiResponseException;
 
 class SteamaSiteService implements ISynchronizeService
 {

@@ -6,6 +6,7 @@ use App\Jobs\SmsProcessor;
 use App\Models\Address\Address;
 use App\Models\User;
 use App\Models\Cluster;
+use App\Models\Person\Person;
 use App\Sms\SmsTypes;
 use Carbon\Carbon;
 use Illuminate\Console\Command;
@@ -17,7 +18,7 @@ use Inensus\SteamaMeter\Services\SteamaSiteService;
 use Inensus\SteamaMeter\Services\SteamaSyncSettingService;
 use Inensus\SteamaMeter\Services\SteamaTransactionsService;
 use Inensus\SteamaMeter\Services\StemaSyncActionService;
-use Inensus\StemaMeter\Exceptions\CronJobException;
+use Inensus\SteamaMeter\Exceptions\CronJobException;
 
 class SteamaMeterDataSynchronizer extends Command
 {
@@ -79,7 +80,11 @@ class SteamaMeterDataSynchronizer extends Command
                     if(!$cluster){
                         return true;
                     }
-                    $adminAddress = $this->address->whereHasMorph('owner', [$cluster->manager])->first();
+                    $adminId = $cluster->manager->id;
+                    $adminAddress = $this->address->whereHasMorph('owner', [Person::class],
+                        function ($q) use ($adminId) {
+                            $q->where('id', $adminId);
+                        })->first();
                     if (!$adminAddress) {
                         return true;
                     }

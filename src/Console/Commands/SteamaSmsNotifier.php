@@ -15,7 +15,7 @@ use Inensus\SteamaMeter\Services\SteamaSmsSettingService;
 use Inensus\SteamaMeter\Services\SteamaTransactionsService;
 use Inensus\SteamaMeter\Sms\Senders\SteamaSmsConfig;
 use Inensus\SteamaMeter\Sms\SteamaSmsTypes;
-use Inensus\StemaMeter\Exceptions\CronJobException;
+use Inensus\SteamaMeter\Exceptions\CronJobException;
 
 class SteamaSmsNotifier extends Command
 {

@@ -13,8 +13,8 @@ use Inensus\SteamaMeter\Models\SteamaCustomer;
 use Inensus\SteamaMeter\Models\SteamaTransaction;
 use Inensus\SteamaMeter\Services\SteamaCredentialService;
 use Inensus\SteamaMeter\Services\SteamaCustomerService;
-use Inensus\StemaMeter\Exceptions\ModelNotFoundException;
-use Inensus\StemaMeter\Exceptions\SteamaApiResponseException;
+use Inensus\SteamaMeter\Exceptions\ModelNotFoundException;
+use Inensus\SteamaMeter\Exceptions\SteamaApiResponseException;
 
 class SteamaMeterApi implements IManufacturerAPI
 {

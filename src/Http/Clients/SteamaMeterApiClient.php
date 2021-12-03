@@ -6,8 +6,8 @@ use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
 use Inensus\SteamaMeter\Helpers\ApiHelpers;
 use Inensus\SteamaMeter\Models\SteamaCredential;
-use Inensus\StemaMeter\Exceptions\ModelNotFoundException;
-use Inensus\StemaMeter\Exceptions\SteamaApiResponseException;
+use Inensus\SteamaMeter\Exceptions\ModelNotFoundException;
+use Inensus\SteamaMeter\Exceptions\SteamaApiResponseException;
 
 class SteamaMeterApiClient
 {

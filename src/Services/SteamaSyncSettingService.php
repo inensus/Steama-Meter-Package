@@ -6,7 +6,7 @@ use Carbon\Carbon;
 use Carbon\CarbonInterval;
 use Inensus\SteamaMeter\Models\SteamaSetting;
 use Inensus\SteamaMeter\Models\SteamaSyncSetting;
-use Inensus\StemaMeter\Exceptions\ModelNotFoundException;
+use Inensus\SteamaMeter\Exceptions\ModelNotFoundException;
 
 class SteamaSyncSettingService
 {
