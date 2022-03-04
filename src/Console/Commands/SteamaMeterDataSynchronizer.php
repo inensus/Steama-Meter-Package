@@ -74,8 +74,9 @@ class SteamaMeterDataSynchronizer extends Command
                     return true;
                 }
                 if ($syncAction->attempts >= $syncSetting->max_attempts) {
-                    $nextSync = Carbon::parse($syncAction->next_sync)->addHours(2);
+                    $nextSync = Carbon::now()->addHours(2);
                     $syncAction->next_sync = $nextSync;
+                    $syncAction->save();
                     $cluster = $this->cluster->newQuery()->with('manager')->first();
                     if(!$cluster){
                         return true;

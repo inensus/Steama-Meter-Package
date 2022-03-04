@@ -253,14 +253,17 @@ class SteamaTransactionsService implements ISynchronizeService
     {
         $owner = $steamaMeter->mpmMeter->meterParameter->owner;
 
-        event('payment.successful', [
-            'amount' => $mainTransaction->amount,
-            'paymentService' => $mainTransaction->original_transaction_type,
-            'paymentType' => 'energy',
-            'sender' => $mainTransaction->sender,
-            'paidFor' => $token,
-            'payer' => $owner,
-            'transaction' => $mainTransaction,
-        ]);
+       if ($owner){
+           event('payment.successful', [
+               'amount' => $mainTransaction->amount,
+               'paymentService' => $mainTransaction->original_transaction_type,
+               'paymentType' => 'energy',
+               'sender' => $mainTransaction->sender,
+               'paidFor' => $token,
+               'payer' => $owner,
+               'transaction' => $mainTransaction,
+           ]);
+       }
+
     }
 }
