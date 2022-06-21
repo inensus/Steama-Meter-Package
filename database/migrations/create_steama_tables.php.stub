@@ -120,7 +120,7 @@ class CreateSteamaTables extends Migration
                 $table->increments('id');
                 $table->integer('meter_id')->unique();
                 $table->integer('customer_id');
-                $table->integer('bit_harvester_id');
+                $table->integer('bit_harvester_id')->nullable()->default(0);
                 $table->integer('mpm_meter_id')->unique();
                 $table->string('hash')->nullable();
                 $table->timestamps();
